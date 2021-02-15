@@ -1,0 +1,7 @@
+{
+    "cogs": [
+        "general",
+        "colors",
+        "settings"
+    ]
+}
