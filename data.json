@@ -2,6 +2,7 @@
     "cogs": [
         "general",
         "colors",
-        "settings"
+        "settings",
+        "dnd"
     ]
 }
