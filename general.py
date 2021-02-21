@@ -6,22 +6,21 @@ import numpy as np
 import discord
 
 
-# ==================================================
-# >>
-# ==================================================
-
-
-class General(commands.Cog):
+class General(commands.Cog, description="General commands, like roll, choose, flip, etc."):
     def __init__(self, bot):
         self.abacus = bot
         self.data = oap.getJson("data")
 
-    # Unload event ==================================================
+    # ==================================================
+    # Unload event
+    # ==================================================
     def cog_unload(self):
         oap.log(text="Unloaded", cog="General", color="cyan")
 
     
-    # Roll command ==================================================
+    # ==================================================
+    # Roll command
+    # ==================================================
     @commands.command(brief="Roll a die (1d20 by default)", usage="[die=1d20] [individual_mod=False] [remove=None]", help="Dice rolling, D&D style.\n1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides. You can add +[number] to the end to add a modifier (e.g. 2d6+4)\n\nBy default, the modifier is added to the total of all rolls. Use individual_mod=True to apply it to each roll individually.\n\nCross out a number of lowest or highest values, using remove=highest or remove=3lowest.")
     async def roll(self, ctx, die="1d20", *, args=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -119,7 +118,9 @@ class General(commands.Cog):
         oap.log(text=f"Rolled {die}", cog="General", color="cyan", ctx=ctx)
 
 
-    # Choose command ==================================================
+    # ==================================================
+    # Choose command
+    # ==================================================
     @commands.command(brief="Choose between several comma-seperated values", usage="[option one, option two[, option three[, option four]]]", help="Can't decide on something? I'll do it for you!")
     async def choose(self, ctx, *, choices=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -138,7 +139,9 @@ class General(commands.Cog):
         oap.log(text="Made a choice", cog="General", color="cyan", ctx=ctx)
 
 
-    # Flip command ==================================================
+    # ==================================================
+    # Flip command
+    # ==================================================
     @commands.command(brief="Flip a coin", help="Flip as many coins as you like!")
     async def flip(self, ctx, amount=1):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -160,7 +163,9 @@ class General(commands.Cog):
         oap.log(text="Flipped a coin", cog="General", color="cyan", ctx=ctx)
 
 
-    # Whois command ==================================================
+    # ==================================================
+    # Whois command
+    # ==================================================
     @commands.command(brief="Get info on a user", usage="[ping]", help="Get an in-depth rundown of a user")
     async def whois(self, ctx, user: discord.Member = ""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -181,7 +186,9 @@ class General(commands.Cog):
         oap.log(text=f"Got info on {user.name}", cog="General", color="cyan", ctx=ctx)
 
 
-# Cog setup ==================================================
+# ==================================================
+# Cog setup
+# ==================================================
 def setup(bot):
     oap.log(text="Loaded", cog="General", color="cyan")
     bot.add_cog(General(bot))

@@ -6,17 +6,21 @@ from importlib import reload
 import discord
 
 
-class Colors(commands.Cog):
+class Colors(commands.Cog, description="Color generation and image manipulation"):
     def __init__(self, bot):
         self.abacus = bot
         self.data = oap.getJson("data")
 
-    # Unload event ==================================================
+    # ==================================================
+    # Unload event
+    # ==================================================
     def cog_unload(self):
         oap.log(text="Unloaded", cog="Colors", color="red")
 
 
-    # Testcolor Command ==================================================
+    # ==================================================
+    # Testcolor command
+    # ==================================================
     @commands.command(brief="Test a color by hexadecimal value", help="")
     async def testcolor(self, ctx, color=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -59,7 +63,9 @@ class Colors(commands.Cog):
         oap.log(text=f"Tested color #{old_color}", cog="Colors", color="red", ctx=ctx)
 
 
-# Cog setup ==================================================
+# ==================================================
+# Cog setup
+# ==================================================
 def setup(bot):
     oap.log(text="Loaded", cog="Colors", color="red")
     bot.add_cog(Colors(bot))

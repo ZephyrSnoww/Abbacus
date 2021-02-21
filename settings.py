@@ -4,17 +4,22 @@ from importlib import reload
 import discord
 
 
-class Settings(commands.Cog):
+class Settings(commands.Cog, description="Settings, per-server or per-user"):
     def __init__(self, bot):
         self.abacus = bot
         self.data = oap.getJson("data")
 
-    # Unload event ==================================================
+    # ==================================================
+    # Unload Event
+    # ==================================================
     def cog_unload(self):
         oap.log(text="Unloaded", cog="Settings", color="yellow")
 
 
-    # Toggle delete invocation ==================================================
+    # ==================================================
+    # Toggle delete invocation command
+    # TODO: only server managers can change this    
+    # ==================================================
     @commands.command(brief="Toggle whether or not to delete invocation messages", help="By default, Abacus doesn't delete invocation messages (the message with the command in it). If this is on, Abacus will delete those messages.")
     async def toggle_delete_invocation(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -36,7 +41,9 @@ class Settings(commands.Cog):
         oap.log(text=f"Changed invocation deletion to {changed_to}", cog="Settings", color="yellow", ctx=ctx)
 
 
-# Cog setup ==================================================
+# ==================================================
+# Cog Setup
+# ==================================================
 def setup(bot):
     oap.log(text="Loaded", cog="Settings", color="yellow")
     bot.add_cog(Settings(bot))
