@@ -5,7 +5,9 @@ from sys import argv
 import discord
 
 
-# Initialization ==================================================
+# ==================================================
+# Initialization
+# ==================================================
 oap.clear()
 nav = Navigation()
 abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960, help_command=PrettyHelp())
@@ -20,7 +22,9 @@ def is_owner(ctx):
     return ctx.author.id == abacus.owner_id
 
 
-# Basic Events ==================================================
+# ==================================================
+# Basic Events
+# ==================================================
 @abacus.event
 async def on_connect():
     oap.log(text="Connected")
@@ -38,8 +42,26 @@ async def on_ready():
     oap.log(text="Presence changed")
 
 
-# Base Commands ==================================================
-@abacus.command(name="reload", brief="Reload one or all of Abacus' cogs", help="This command is owner-only.\n\nReload all cogs, or reload a specific cog. This refreshes the file and applies any changes made.", cog="General")
+@abacus.event
+async def on_command_error(ctx, error):
+    author = await abacus.fetch_user(184474965859368960)
+    embed1 = oap.makeEmbed(title="Yikes", description=f"Someone managed to get an error")
+    embed1.add_field(name="Command", value=ctx.message.content.split(" ")[0], inline=True)
+    embed1.add_field(name="Message", value=ctx.message.content, inline=True)
+    embed1.add_field(name="Server", value=ctx.guild.name, inline=True)
+    embed1.add_field(name="Author", value=ctx.author.name, inline=True)
+    embed1.add_field(name="Error", value=f"`{error.original}`", inline=True)
+    await author.send(embed=embed1)
+    embed2 = oap.makeEmbed(title="Uh Oh!", description=f"Whatever you did, I got the following error.\nIve told my author about this, hopefully it should be fixed soon", ctx=ctx)
+    embed2.add_field(name="Error", value=f"`{error.original}`")
+    await ctx.send(embed=embed2)
+    oap.log(text=f"Got an error from the {ctx.message.content.split(' ')[0]} command", ctx=ctx)
+
+
+# ==================================================
+# Basic commands
+# ==================================================
+@abacus.command(name="reload", brief="Reload one or all of Abacus' cogs", help="This command is owner-only.\n\nReload all cogs, or reload a specific cog. This refreshes the file and applies any changes made.", hidden=True)
 @commands.check(is_owner)
 async def _reload(ctx, cog="all"):
     server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -85,5 +107,7 @@ async def _reload_error(ctx, error):
         oap.log(text="Tried to reload cog(s) - Missing permissions", ctx=ctx)
 
 
-# Run the bot ==================================================
+# ==================================================
+# Run the bot
+# ==================================================
 abacus.run(argv[1])
