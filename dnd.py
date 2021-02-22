@@ -1,6 +1,7 @@
 import ovalia_auxiliary_protocol as oap
 from discord.ext import tasks, commands
 from importlib import reload
+from random import randint
 import requests as r
 import DiscordUtils
 import discord
@@ -19,53 +20,6 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     def cog_unload(self):
         oap.log(text="Unloaded", cog="DND", color="magenta")
-
-
-    # Get info from a category ==================================================
-    # @commands.command(brief="", usage="", help="")
-    # async def category(self, ctx, category=""):
-    #     server_data = oap.getJson(f"servers/{ctx.guild.id}")
-    #     if server_data.get("delete_invocation") == True:
-    #         await oap.tryDelete(ctx)
-    
-    #     request = r.get(url=self.url).json()
-    #     categories = request.keys()
-
-    #     if category == "" or (category not in categories):
-    #         embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid category\n*(You can get valid categories with >>available_categories)*", ctx=ctx)
-    #         return await ctx.send(embed=embed)
-        
-    #     request = r.get(url=f"{self.url}/{category}").json()
-    #     results = request.get("results")
-
-    #     if len("- " + "\n- ".join([result.get("index") for result in results])) > 500:
-    #         whole_string = "- " + "\n- ".join([result.get("index") for result in results])
-    #         strings = [whole_string[:500] + "..."]
-    #         for i in range(10):
-    #             _string = whole_string[500*(i+1):]
-    #             if len(_string) > 500:
-    #                 strings.append("..." + _string[:500] + "...")
-    #                 pass
-    #             else:
-    #                 strings.append("..." + _string)
-    #                 break
-            
-    #         embeds = []
-    #         for string in strings:
-    #             embeds.append(oap.makeEmbed(title=f"Data From the {category.title()} Category", description=string, ctx=ctx))
-            
-    #         paginator = DiscordUtils.Pagination.CustomEmbedPaginator(ctx, remove_reactions=True, auto_footer=True)
-    #         paginator.add_reaction('⏮️', "first")
-    #         paginator.add_reaction('⏪', "back")
-    #         paginator.add_reaction('🔐', "lock")
-    #         paginator.add_reaction('⏩', "next")
-    #         paginator.add_reaction('⏭️', "last")
-    #         await paginator.run(embeds)
-    #     else:
-    #         embed = oap.makeEmbed(title=f"Data From the {category.title()} Category", description=("- " + "\n- ".join([result.get("index") for result in results])), ctx=ctx)
-    #         await ctx.send(embed=embed)
-
-    #     oap.log(text=f"Got info from the {category} category", cog="DND", color="magenta", ctx=ctx)
 
 
     # ==================================================
@@ -272,6 +226,85 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
 
         await ctx.send(embed=embed)
         oap.log(text=f"Got info on the {item} item from the {category} category", cog="DND", color="magenta", ctx=ctx)
+
+
+    # ==================================================
+    # Rolling stats
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def rollstats(self, ctx, *, _in=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Argument checking
+        # Make the output dict
+        # ==================================================
+        ordered = False if _in == "" else True
+        random = False
+        if _in == "random":
+            ordered = False
+            random = True
+        if ordered:
+            for stat in _in.split(" "):
+                if stat not in ["str", "dex", "con", "int", "wis", "cha"]:
+                    embed = oap.makeEmbed(title="Whoops!", description=f"The stat \"{stat}\" is not a valid stat\nValid stats are str, dex, con, int, wis, or cha", ctx=ctx)
+                    return await ctx.send(embed=embed)
+        
+        stats = {
+            "str": 0,
+            "dex": 0,
+            "con": 0,
+            "int": 0,
+            "wis": 0,
+            "cha": 0
+        }
+
+        # ==================================================
+        # Rolling the numbers
+        # (4d6, drop the lowest, six times)
+        # ==================================================
+        rolls = []
+        for i in range(6):
+            _rolls = [randint(1, 6) for i in range(4)]
+            _rolls.remove(min(_rolls))
+            rolls.append(sum(_rolls))
+
+        # ==================================================
+        # If they wanted an ordered list
+        # Assign rolls to the stats highest to lowest
+        # If they didnt specify every stat
+        # Randomly choose the ones they didnt specify
+        # ==================================================
+        if ordered:
+            for stat in _in.split(" "):
+                stats[stat] = max(rolls)
+                rolls.remove(max(rolls))
+            if len(rolls) > 0:
+                for stat in ["con", "dex", "str", "wis", "int", "cha"]:
+                    if stats[stat] == 0:
+                        stats[stat] = max(rolls)
+                        rolls.remove(max(rolls))
+
+        # ==================================================
+        # If they want random stats
+        # Randomly assign the stats
+        # ==================================================
+        elif random:
+            for i in stats:
+                index = randint(0, len(rolls)-1)
+                stats[i] = rolls[index]
+                del rolls[index]
+
+        # ==================================================
+        # If they dont want an ordered list or random stats
+        # Just give them the six numbers
+        # ==================================================
+
+        embed = oap.makeEmbed(title="Rolled stats!", description=(", ".join([str(roll) for roll in rolls])) if (not ordered and not random) else ("\n".join([f"{key.title()}: {value}" for key, value in stats.items()])), ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Rolled stats", cog="DND", color="magenta", ctx=ctx)
 
 
 # ==================================================
