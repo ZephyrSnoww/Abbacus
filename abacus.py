@@ -2,6 +2,7 @@ from discord.ext import commands
 from pretty_help import PrettyHelp, Navigation
 import ovalia_auxiliary_protocol as oap
 from sys import argv
+import traceback
 import discord
 
 
@@ -45,7 +46,7 @@ async def on_ready():
 @abacus.event
 async def on_command_error(ctx, error):
     author = await abacus.fetch_user(184474965859368960)
-    embed1 = oap.makeEmbed(title="Yikes", description=f"Someone managed to get an error")
+    embed1 = oap.makeEmbed(title="Yikes", description="```" + "\n".join(traceback.format_tb(error.original.__traceback__)) + "```")
     embed1.add_field(name="Command", value=ctx.message.content.split(" ")[0], inline=True)
     embed1.add_field(name="Message", value=ctx.message.content, inline=True)
     embed1.add_field(name="Server", value=ctx.guild.name, inline=True)
