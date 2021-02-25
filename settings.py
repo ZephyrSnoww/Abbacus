@@ -44,7 +44,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Poll settings command
     # ==================================================
-    @commands.command(brief="", usage="", help="")
+    @commands.command(brief="Change default settings for the poll command", usage="[category] [setting]", help="")
     async def poll_settings(self, ctx, category="", *, value=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
