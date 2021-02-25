@@ -45,6 +45,8 @@ async def on_ready():
 
 @abacus.event
 async def on_command_error(ctx, error):
+    if isinstance(error, discord.ext.commands.CommandNotFound):
+        return
     author = await abacus.fetch_user(184474965859368960)
     embed1 = oap.makeEmbed(title="Yikes", description="```" + "\n".join(traceback.format_tb(error.original.__traceback__)) + "```")
     embed1.add_field(name="Command", value=ctx.message.content.split(" ")[0], inline=True)
