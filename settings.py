@@ -40,6 +40,141 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         oap.setJson(f"servers/{ctx.guild.id}", server_data)
         oap.log(text=f"Changed invocation deletion to {changed_to}", cog="Settings", color="yellow", ctx=ctx)
 
+    
+    # ==================================================
+    # Poll settings command
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def poll_settings(self, ctx, category="", *, value=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Arg checking
+        # ==================================================
+        if category == "":
+            embed = oap.makeEmbed(title="Please Enter a Category", description="Valid categories are:\n- emoji\n- timer\n- invocation", ctx=ctx)
+            return await ctx.send(embed=embed)
+        
+        if category not in ["emoji", "timer", "invocation"]:
+            embed = oap.makeEmbed(title="Whoops!", description="You entered an invalid category\nValid categories are:\n- emoji\n- timer\n- invocation", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        
+        # ==================================================
+        # If theyre changing emoji
+        # ==================================================
+        if category == "emoji":
+            # ==================================================
+            # Arg check the value argument
+            # ==================================================
+            if value == "" or value.split(" ")[0] not in ["yes", "no", "shrug", "all"]:
+                embed = oap.makeEmbed(title="Please Enter a Valid Emoji Type to Change", description="Emoji you can set are \"yes\", \"no\", \"shrug\", or \"all\"", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            if len(value.split(" ")) == 1:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter an emoji to change to, or \"reset\"", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            value = value.split(" ")
+            which_emoji = value[0]
+            emoji = value[1]
+
+            # ==================================================
+            # Check if the emoji is from the server
+            # ==================================================
+            if emoji != "reset":
+                try:
+                    await ctx.message.add_reaction(emoji)
+                    await ctx.message.remove_reaction(emoji, self.abacus.user)
+                except:
+                    embed = oap.makeEmbed(title="Whoops!", description="That emoji isn't from this server", ctx=ctx)
+                    return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Get server data (if it exists, otherwise a default dict)
+            # ==================================================
+            if server_data.get("poll"):
+                data = server_data.get("poll")
+            else:
+                data = {
+                    "yes": "",
+                    "no": "",
+                    "shrug": ""
+                }
+                
+            # ==================================================
+            # Change the single (or all) emoji
+            # ==================================================
+            if which_emoji != "all":
+                if emoji == "reset":
+                    data[which_emoji] = ""
+                    out = f"The default {which_emoji} emoji has been reset"
+                else:
+                    data[which_emoji] = emoji
+                    out = f"The default {which_emoji} emoji has been set to {emoji}"
+            else:
+                if emoji == "reset":
+                    data = {
+                        "yes": "",
+                        "no": "",
+                        "shrug": ""
+                    }
+                    out = f"All default emoji have been reset"
+                else:
+                    data = {
+                        "yes": emoji,
+                        "no": emoji,
+                        "shrug": emoji
+                    }
+                    out = f"All default emoji have been set to {emoji}"
+
+            # ==================================================
+            # Set data and send ouput
+            # ==================================================
+            server_data["poll"] = data
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=out, ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Changed {which_emoji} default poll emoji to {emoji}", cog="Settigns", color="yellow", ctx=ctx)
+
+        # ==================================================
+        # If theyre changing invocation
+        # ==================================================
+        elif category == "invocation":
+            if server_data.get("poll"):
+                data = server_data.get("poll")
+            else: 
+                data = {}
+
+            # ==================================================
+            # Get and switch delete_invocation value
+            # ==================================================
+            if isinstance(data.get("delete_invocation"), bool):
+                if data["delete_invocation"] == True:
+                    data["delete_invocation"] = False
+                else:
+                    data["delete_invocation"] = True
+            else:
+                data["delete_invocation"] = False
+
+            # ==================================================
+            # Set data and send output
+            # ==================================================
+            server_data["poll"] = data
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"delete_invocation has been set to {data['delete_invocation']}")
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Changed poll invocation deletion to {data['delete_invocation']}", cog="Settigns", color="yellow", ctx=ctx)
+
+        # ==================================================
+        # If theyre changing timer settings
+        # ==================================================
+        embed = oap.makeEmbed(title="Whoops!", description="Timer settings aren't available yet\nCheck back soon", ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Tried to change timer settings", cog="Settigns", color="yellow", ctx=ctx)
+
 
 # ==================================================
 # Cog Setup

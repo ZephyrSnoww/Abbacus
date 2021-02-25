@@ -4,6 +4,7 @@ from importlib import reload
 from random import randint, choice
 import numpy as np
 import discord
+import re
 
 
 class General(commands.Cog, description="General commands, like roll, choose, flip, etc."):
@@ -27,7 +28,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
 
-        # Error checking the die amount ==================================================
+        # ==================================================
+        # Error checking
+        # ==================================================
         try:
             amount = int(die.split("d")[0])
         except ValueError:
@@ -47,7 +50,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         else:
             mod = 0
 
-        # Argument parsing ==================================================
+        # ==================================================
+        # Arg checking
+        # ==================================================
         individual_mod = False
         remove_any = False
         if "individual_mod=" in args:
@@ -74,7 +79,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
                     embed = oap.makeEmbed(title="Whoops!", description="The remove argument must include either \"highest\" or \"lowest\"", ctx=ctx)
                     return await ctx.send(embed=embed)
         
-        # Generating rolls ==================================================
+        # ==================================================
+        # Generating rolls
+        # ==================================================
         rolls = [randint(1, size) for i in range(amount)]
         if len(rolls) == 1:
             individual_mod = True
@@ -86,7 +93,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
             mod_rolls = rolls
             rolls = [str(roll) for roll in mod_rolls]
 
-        # Checking for remove argument ==================================================
+        # ==================================================
+        # Checking and handling the remove argument
+        # ==================================================
         rolls_without_removed = [roll for roll in mod_rolls]
         indexes = np.array([])
         values_removed = []
@@ -109,7 +118,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         total = 0
         for roll in rolls_without_removed: total += roll
 
-        # Output ==================================================
+        # ==================================================
+        # Output
+        # ==================================================
         embed = oap.makeEmbed(title=f"Rolled {die}", description=(", ".join(rolls)), ctx=ctx)
         if len(rolls) > 1:
             embed.add_field(name="Total", value=((f"{str(total+mod)}{(f' ({total} without mod)') if mod > 0 else ''}") if not individual_mod else (f"{total}")))
@@ -127,14 +138,19 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
 
-        # Error checking for whether they actually gave choices ==================================================
+        # ==================================================
+        # Arg checking
+        # ==================================================
         if choices == "" or len(choices.split(", ")) == 1:
             embed = oap.makeEmbed(title="Whoops!", description="The choose command requires two or more choices, seperated by a comma and a space", ctx=ctx)
             return await ctx.send(embed=embed)
         
+        # ==================================================
+        # Choosing and sending output
+        # ==================================================
         choices = choices.split(", ")
         _choice = choice(choices)
-        embed = oap.makeEmbed(title=_choice.title(), description=f"Out of {', '.join(choices[:-1])} and {choices[-1]}, I choose {_choice}", ctx=ctx)
+        embed = oap.makeEmbed(title=_choice.title() if len(_choice) <= 256 else (_choice.title()[250:] + "..."), description=f"Out of {', '.join(choices[:-1])} and {choices[-1]}, I choose {_choice}", ctx=ctx)
         await ctx.send(embed=embed)
         oap.log(text="Made a choice", cog="General", color="cyan", ctx=ctx)
 
@@ -173,8 +189,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
             await oap.tryDelete(ctx)
 
         if user in ["", None]:
-            embed = oap.makeEmbed(title="Whoops!", description="Please provide a member\nYou can ping someone as the argument", ctx=ctx)
-            return await ctx.send(embed=embed)
+            user = ctx.author
 
         embed = oap.makeEmbed(title=f"Got all info on {user.name}#{user.discriminator}!", description=f"({user.nick})", ctx=ctx)
         embed.add_field(name="ID", value=f"{user.id}", inline=True)
@@ -184,6 +199,67 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
 
         await ctx.send(embed=embed)
         oap.log(text=f"Got info on {user.name}", cog="General", color="cyan", ctx=ctx)
+
+
+    # ==================================================
+    # Poll command
+    # ==================================================
+    @commands.command(brief="Start a vote on anything you like", usage="[info]", help="Custom emoji can be used - any emoji in the message will be added as a reaction.\nUnfortunately, I can only use emoji that are from the server i'm in.")
+    async def poll(self, ctx, *, input=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("poll"):
+            if server_data.get("poll").get("delete_invocation"):
+                await oap.tryDelete(ctx)
+            elif server_data.get("poll").get("delete_invocation") == None:
+                await oap.tryDelete(ctx)
+        else:
+            await oap.tryDelete(ctx)
+
+        # ==================================================
+        # Get all emoji in the message
+        # ==================================================        
+        emojis = [text.group() for text in re.finditer(r"<:([^\s<>]+):(\d{18})>", input)]
+    
+        # ==================================================
+        # If they didnt enter a poll,
+        # And there are <=1 emoji,
+        # React with basic yes/no
+        # ==================================================
+        if input == "" or len(emojis) <= 1:
+            if server_data.get("poll"):
+                embed = oap.makeEmbed(title=f"Started a Poll", description=("Yes or no?" if input == "" else input), ctx=ctx)
+                message = await ctx.send(embed=embed)
+                await message.add_reaction((server_data.get("poll").get("yes")) if (server_data.get("poll").get("yes") != "") else "✅")
+                await message.add_reaction((server_data.get("poll").get("no")) if server_data.get("poll").get("no") != "" else "❎")
+                if "shrug" in input:
+                    await message.add_reaction((server_data.get("poll").get("shrug")) if server_data.get("poll").get("shrug") != "" else "🤷")
+                return oap.log(text="Made a poll", cog="General", color="cyan", ctx=ctx)
+            
+            embed = oap.makeEmbed(title=f"Started a Poll", description=("Yes or no?" if input == "" else input), ctx=ctx)
+            message = await ctx.send(embed=embed)
+            await message.add_reaction("✅")
+            await message.add_reaction("❎")
+            if "shrug" in input:
+                await message.add_reaction("🤷")
+            return oap.log(text="Made a poll", cog="General", color="cyan", ctx=ctx)
+
+        # ==================================================
+        # If they did enter stuff, and there are >1 emoji
+        # ==================================================
+        embed = oap.makeEmbed(title=f"Started a Poll", description=input, ctx=ctx)
+        message = await ctx.send(embed=embed)
+        for emoji in emojis:
+            try:
+                await message.add_reaction(emoji)
+            except:
+                await message.delete()
+                embed = oap.makeEmbed(title="Whoops!", description=f"I can only use emojis from this sever\n{emoji} isn't from this server", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+    
+        # embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
+        # await ctx.send(embed=embed)
+        oap.log(text="Made a poll", cog="General", color="cyan", ctx=ctx)
 
 
 # ==================================================
