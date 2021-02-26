@@ -37,7 +37,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
             return await ctx.send(embed=embed)
         
         # ==================================================
-        # Get rid of hashtag if it starts with it
+        # Get rid of hashtag if the color starts with it
         # Check if color is a valid hex code
         # ==================================================
         if color.startswith("#"):
@@ -48,6 +48,9 @@ class Images(commands.Cog, description="Color generation and image manipulation"
 
         # ==================================================
         # Variable definitions
+        # Make the image background transparent if specified
+        # Load the authors avatar
+        # Load two sizes of font
         # ==================================================
         old_color = f"{color}"
         color = oap.hexToRGB(color)
@@ -63,6 +66,8 @@ class Images(commands.Cog, description="Color generation and image manipulation"
 
         # ==================================================
         # Making the lighter and darker colors
+        # Two colors lighter by 60/120
+        # Two colors darker by 60/120
         # ==================================================
         lighter = [(i + 120) if (i + 120) < 255 else 255 for i in color]
         light = [(i + 60) if (i + 60) < 255 else 255 for i in color]
@@ -70,7 +75,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         darker = [(i - 120) if (i - 120) > 0 else 0 for i in color]
 
         # ==================================================
-        # Drawing everything on the image
+        # Draw everything on the image
         # ==================================================
         draw.text((7, 4), ("#%s" % old_color).upper(), tuple(darker), font=font)
         draw.text((5, 2), ("#%s" % old_color).upper(), ((255, 255, 255) if not transparent else color), font=font)
@@ -83,14 +88,15 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         draw.text((41, 115-23), ctx.author.nick if ctx.author.nick else ctx.author.name, ((255, 255, 255) if not transparent else color), font=font2)
 
         # ==================================================
-        # Adding the authors avatar
+        # Add the authors avatar
+        # Save the image
         # ==================================================
         draw.rectangle([6, 115-34, 6+32, 115-2], fill=tuple(darker))
         img.paste(avatar, (0+4, 115-36))
         img.save("images/colors/test.png")
 
         # ==================================================
-        # Output
+        # Send the image and log to console
         # ==================================================
         await ctx.send(file=discord.File("images/colors/test.png"))
         oap.log(text=f"Tested color #{old_color}", cog="Images", color="red", ctx=ctx)
@@ -107,6 +113,8 @@ class Images(commands.Cog, description="Color generation and image manipulation"
 
         # ==================================================
         # Arg checking
+        # If they didnt supply an image, use their pfp
+        # If they gave an amount above or below the max/min, cap it
         # ==================================================
         if len(ctx.message.attachments) == 0:
             url = str(ctx.author.avatar_url_as(static_format="png", size=256))
@@ -119,7 +127,10 @@ class Images(commands.Cog, description="Color generation and image manipulation"
             amount = 100
     
         # ==================================================
-        # Get the attached image and scale it
+        # Get the attached image from url
+        # Scale it down based on what they supplied
+        # Scale it back up using nearest neighbor aliasing
+        # Save it
         # ==================================================
         req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
         img = Image.open(urlopen(req))
@@ -128,6 +139,9 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         img = img.resize((w, h), Image.NEAREST)
         img.save("images/pixelated.png")
     
+        # ==================================================
+        # Send the image and log to console
+        # ==================================================
         await ctx.send(file=discord.File("images/pixelated.png"))
         oap.log(text="Pixelated an image", cog="Images", color="red", ctx=ctx)
 
@@ -143,6 +157,8 @@ class Images(commands.Cog, description="Color generation and image manipulation"
 
         # ==================================================
         # Arg checking
+        # If they didnt supply an image, use their pfp
+        # If they supplied an amount above or below the max/min, cap it
         # ==================================================
         if len(ctx.message.attachments) == 0:
             url = str(ctx.author.avatar_url_as(static_format="png", size=256))
@@ -159,7 +175,10 @@ class Images(commands.Cog, description="Color generation and image manipulation"
             amount = 1
     
         # ==================================================
-        # Get the attached image and scale it
+        # Get the attached image from url
+        # Scale it down based on how much they supplied
+        # Scale it back up with nearest neighbor aliasing
+        # Save it with compression
         # ==================================================
         req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
         img = Image.open(urlopen(req))
@@ -169,6 +188,9 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         img = img.convert("RGB")
         img.save("images/destroyed.jpg", quality=10-compression_amount)
     
+        # ==================================================
+        # Send the image and log to console
+        # ==================================================
         await ctx.send(file=discord.File("images/destroyed.jpg"))
         oap.log(text="Destroyed an image", cog="Images", color="red", ctx=ctx)
 
@@ -184,6 +206,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     
         # ==================================================
         # Arg checking
+        # If they didnt supply an image, use their pfp
         # ==================================================
         if text == "":
             embed = oap.makeEmbed(title="Whoops!", description="Please enter some text", ctx=ctx)
@@ -195,13 +218,16 @@ class Images(commands.Cog, description="Color generation and image manipulation"
             url = ctx.message.attachments[0].url
 
         # ==================================================
-        # Get variables
+        # Get variables from arguments
         # ==================================================
         top_text = re.findall(r'top="([^"]+)"', text)[0] if len(re.findall(r'top="([^"]+)"', text)) != 0 else ""
         bottom_text = re.findall(r'bottom="([^"]+)"', text)[0] if len(re.findall(r'bottom="([^"]+)"', text)) != 0 else ""
 
         # ==================================================
-        # Get the image and all variables
+        # Get the image from the url
+        # Load the font
+        # Load the image for drawing
+        # Get how big the text will be for centering
         # ==================================================
         req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
         img = Image.open(urlopen(req))
@@ -212,7 +238,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         text2w, text2h = draw.textsize(bottom_text, font)
 
         # ==================================================
-        # Caption the image
+        # Caption and save the image
         # ==================================================
         draw.text((img.width/2 - text1w/2, (math.floor(img.width/100))), top_text, stroke_width=math.floor(img.width/100), stroke_fill=(0, 0, 0), font=font)
         draw.text((img.width/2 - text2w/2, img.height-((5*math.floor(img.width/100))+font_size)), bottom_text, stroke_width=math.floor(img.width/100), stroke_fill=(0, 0, 0), font=font)
@@ -220,7 +246,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         img.save("images/captioned.png")
     
         # ==================================================
-        # Output
+        # Send the image and log to console
         # ==================================================
         await ctx.send(file=discord.File("images/captioned.png"))
         oap.log(text=f"Captioned an image", cog="Images", color="red", ctx=ctx)
