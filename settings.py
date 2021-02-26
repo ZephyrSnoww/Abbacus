@@ -177,6 +177,68 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         oap.log(text="Tried to change timer settings", cog="Settigns", color="yellow", ctx=ctx)
 
 
+    # ==================================================
+    # User settings command
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def user_settings(self, ctx, category="", *, input=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        user_data = oap.getJson(f"users/{ctx.author.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+
+        categories = ["color"]
+    
+        # ==================================================
+        # Arg checking
+        # ==================================================
+        if category == "":
+            embed = oap.makeEmbed(title="Please Enter a Category!", description="Valid categories are:\n" + ("\n- ".join(categories)), ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        if category not in categories:
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid category\nValid categories are:\n- " + ("\n- ".join(categories)), ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # If they input the color category
+        # ==================================================
+        if category == "color":
+            # ==================================================
+            # Check if they input "reset"
+            # ==================================================
+            if input == "reset":
+                del user_data["color"]
+
+                oap.setJson(f"users/{ctx.author.id}", user_data)
+                embed = oap.makeEmbed(title="Success!", description=f"Your color has been reset", ctx=ctx)
+                await ctx.send(embed=embed)
+                return oap.log(text="Reset their user color", cog="Settings", color="yellow", ctx=ctx)
+
+            # ==================================================
+            # Get rid of any starting hashtag
+            # And check if they gave a valid color
+            # ==================================================
+            if input.startswith("#"):
+                input = input[1:]
+            if len(input) != 6:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid hex code for your color", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            try:
+                color = int(f"0x{input}", 16)
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid hex code for your color", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            user_data["color"] = color
+            oap.setJson(f"users/{ctx.author.id}", user_data)
+    
+            embed = oap.makeEmbed(title="Success!", description=f"Your color has been set to 0x{input}", ctx=ctx)
+            await ctx.send(embed=embed)
+            oap.log(text="Changed their user color", cog="Settings", color="yellow", ctx=ctx)
+
+
 # ==================================================
 # Cog Setup
 # ==================================================

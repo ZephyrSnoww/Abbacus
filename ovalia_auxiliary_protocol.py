@@ -30,7 +30,11 @@ async def tryDelete(_ctx):
 
 
 def makeEmbed(title="TITLE", description="DESCRIPTION", color=0xffadb6, ctx=None):
-    _out = discord.Embed(title=title, description=description, color=color, timestamp=datetime.now())
+    if ctx:
+        user_color = getJson(f"users/{ctx.author.id}").get("color")
+        _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=datetime.now())
+    else:
+        _out = discord.Embed(title=title, description=description, color=color, timestamp=datetime.now())
     if ctx:
         _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
     return _out
@@ -56,10 +60,11 @@ def log(text="PLACEHOLDER", cog="Main", color="green", ctx=None, event=False):
 
 # Valid Termcolor Colors:
 #  - grey
-#  - red
+#  - white
+
 #  - green
 #  - yellow
 #  - blue
 #  - magenta
+#  - red
 #  - cyan
-#  - white
