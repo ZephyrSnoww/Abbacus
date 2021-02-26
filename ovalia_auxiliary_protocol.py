@@ -1,6 +1,6 @@
+from datetime import datetime, timedelta
 from time import localtime, strftime
 from termcolor import colored
-from datetime import datetime
 import discord
 import json
 import os
@@ -19,7 +19,7 @@ def getJson(_file):
 
 def setJson(_file, _data):
     with open(f"{_file}.json", "w+") as file:
-        file.write(json.dumps(_data, indent=2))
+        file.write(json.dumps(_data, indent=4))
 
 
 async def tryDelete(_ctx):
@@ -32,7 +32,7 @@ async def tryDelete(_ctx):
 def makeEmbed(title="TITLE", description="DESCRIPTION", color=0xffadb6, ctx=None):
     if ctx:
         user_color = getJson(f"users/{ctx.author.id}").get("color")
-        _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=datetime.now())
+        _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=datetime.now()+timedelta(hours=7))
     else:
         _out = discord.Embed(title=title, description=description, color=color, timestamp=datetime.now())
     if ctx:
@@ -65,6 +65,6 @@ def log(text="PLACEHOLDER", cog="Main", color="green", ctx=None, event=False):
 #  - green
 #  - yellow
 #  - blue
+#  - cyan
 #  - magenta
 #  - red
-#  - cyan
