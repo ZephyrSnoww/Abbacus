@@ -63,6 +63,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
             # Get all category info
             # Spit it into strings small enough for discord (if necesarry)
             # Paginate it (if necesarry)
+            # Send output
             # ==================================================
             if len("- " + "\n- ".join([result.get("index") for result in results])) > 500:
                 whole_string = "- " + "\n- ".join([result.get("index") for result in results])
@@ -224,6 +225,9 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         else:
             embed = oap.makeEmbed(title=f"HERE HAVE A BUNCH OF SHITTY {'JSON' if (isinstance(request, dict)) else 'not json'} DATA LOL!!!!!!!!!!!!!", description="```json\n" + ((json.dumps(request, indent=2) if (isinstance(request, dict)) else request) if len(json.dumps(request, indent=2) if (isinstance(request, dict)) else request) < 2000 else (json.dumps(request, indent=2) if (isinstance(request, dict)) else request)[:2000]) + "```", ctx=ctx)
 
+        # ==================================================
+        # Send output and log to console
+        # ==================================================
         await ctx.send(embed=embed)
         oap.log(text=f"Got info on the {item} item from the {category} category", cog="DND", color="magenta", ctx=ctx)
 
@@ -239,6 +243,9 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     
         # ==================================================
         # Argument checking
+        # Check if they want anything in order
+        # Check if they want random stats or just numbers
+        # Check if they entered valid stat names (if ordered)
         # Make the output dict
         # ==================================================
         ordered = False if _in == "" else True
@@ -302,6 +309,9 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # Just give them the six numbers
         # ==================================================
 
+        # ==================================================
+        # Send output and log to console
+        # ==================================================
         embed = oap.makeEmbed(title="Rolled stats!", description=(", ".join([str(roll) for roll in rolls])) if (not ordered and not random) else ("\n".join([f"{key.title()}: {value}" for key, value in stats.items()])), ctx=ctx)
         await ctx.send(embed=embed)
         oap.log(text="Rolled stats", cog="DND", color="magenta", ctx=ctx)

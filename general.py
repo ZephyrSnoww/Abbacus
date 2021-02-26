@@ -29,26 +29,28 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
             await oap.tryDelete(ctx)
 
         # ==================================================
-        # Error checking
+        # Error checking for any formatting problems
+        # Look for a mod, if nothing, just set it to 0
         # ==================================================
-        try:
-            amount = int(die.split("d")[0])
-        except ValueError:
-            embed = oap.makeEmbed(title="Whoops!", description="The amount of die must be an integer!", ctx=ctx)
-            return await ctx.send(embed=embed)
-        try:
-            size = int((die.split("d")[1].split("+")[0] if "+" in die else (die.split("d")[1])))
-        except ValueError:
-            embed = oap.makeEmbed(title="Whoops!", description="The size of the die must be an integer!", ctx=ctx)
-            return await ctx.send(embed=embed)
-        if "+" in die:
+        if True:
             try:
-                mod = int(die.split("+")[1])
+                amount = int(die.split("d")[0])
             except ValueError:
-                embed = oap.makeEmbed(title="Whoops!", description="The modifier must be an integer!", ctx=ctx)
+                embed = oap.makeEmbed(title="Whoops!", description="The amount of die must be an integer!", ctx=ctx)
                 return await ctx.send(embed=embed)
-        else:
-            mod = 0
+            try:
+                size = int((die.split("d")[1].split("+")[0] if "+" in die else (die.split("d")[1])))
+            except ValueError:
+                embed = oap.makeEmbed(title="Whoops!", description="The size of the die must be an integer!", ctx=ctx)
+                return await ctx.send(embed=embed)
+            if "+" in die:
+                try:
+                    mod = int(die.split("+")[1])
+                except ValueError:
+                    embed = oap.makeEmbed(title="Whoops!", description="The modifier must be an integer!", ctx=ctx)
+                    return await ctx.send(embed=embed)
+            else:
+                mod = 0
 
         # ==================================================
         # Arg checking
@@ -80,7 +82,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
                     return await ctx.send(embed=embed)
         
         # ==================================================
-        # Generating rolls
+        # Generating rolls, checking for individual mod
         # ==================================================
         rolls = [randint(1, size) for i in range(amount)]
         if len(rolls) == 1:
@@ -101,25 +103,26 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         values_removed = []
         if remove_any:
             if remove == "highest":
-                # indexes = np.argsort(-mod_rolls)[-remove_amount:]
                 indexes = np.argpartition(np.array(mod_rolls), -remove_amount)[-remove_amount:]
                 for index in indexes:
                     rolls[index] = f"~~{rolls[index]}~~"
                     values_removed.append(mod_rolls[index])
                     rolls_without_removed.remove(mod_rolls[index])
             elif remove == "lowest":
-                # indexes = np.argsort(mod_rolls)[-remove_amount:]
                 indexes = np.argpartition(-np.array(mod_rolls), -remove_amount)[-remove_amount:]
                 for index in indexes:
                     rolls[index] = f"~~{rolls[index]}~~"
                     values_removed.append(mod_rolls[index])
                     rolls_without_removed.remove(mod_rolls[index])
 
+        # ==================================================
+        # Calculate the total
+        # ==================================================
         total = 0
         for roll in rolls_without_removed: total += roll
 
         # ==================================================
-        # Output
+        # Send output and log to console
         # ==================================================
         embed = oap.makeEmbed(title=f"Rolled {die}", description=(", ".join(rolls)), ctx=ctx)
         if len(rolls) > 1:
@@ -245,6 +248,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
 
         # ==================================================
         # If they did enter stuff, and there are >1 emoji
+        # React with each emoji
         # ==================================================
         embed = oap.makeEmbed(title=f"Started a Poll", description=input, ctx=ctx)
         message = await ctx.send(embed=embed)
@@ -256,9 +260,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
                 embed = oap.makeEmbed(title="Whoops!", description=f"I can only use emojis from this sever\n{emoji} isn't from this server", ctx=ctx)
                 return await ctx.send(embed=embed)
 
-    
-        # embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
-        # await ctx.send(embed=embed)
+        # ==================================================
+        # Log to console
+        # ==================================================
         oap.log(text="Made a poll", cog="General", color="cyan", ctx=ctx)
 
 

@@ -13,6 +13,10 @@ import discord
 
 # ==================================================
 # Initialization
+# Clear the console
+# Initialize the bot
+# Load all cogs
+# Define the is_owner() check
 # ==================================================
 oap.clear()
 nav = Navigation()
@@ -41,6 +45,10 @@ async def on_disconnect():
     oap.log(text="Disconnected")
 
 
+# ==================================================
+# On ready (bot loads)
+# Change the bots presence to "listening to >>help"
+# ==================================================
 @abacus.event
 async def on_ready():
     oap.log(text="Abacus online")
@@ -48,6 +56,13 @@ async def on_ready():
     oap.log(text="Presence changed")
 
 
+# ==================================================
+# On a command error
+# If the command wasnt found, do nothing
+# If they didnt have permission to do the cmomand, say so
+# Otherwise, send the bot owner a DM with the error
+# And tell the user something went wrong
+# ==================================================
 @abacus.event
 async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.CommandNotFound):
@@ -71,7 +86,7 @@ async def on_command_error(ctx, error):
 
 
 # ==================================================
-# Basic commands
+# Reload command
 # ==================================================
 @abacus.command(name="reload", brief="Reload one or all of Abacus' cogs", help="This command is owner-only.\n\nReload all cogs, or reload a specific cog. This refreshes the file and applies any changes made.", hidden=True)
 @commands.check(is_owner)
@@ -79,9 +94,19 @@ async def _reload(ctx, cog="all"):
     server_data = oap.getJson(f"servers/{ctx.guild.id}")
     if not server_data.get("delete_invocation") in [None, False]: await oap.tryDelete(ctx)
     
+    # ==================================================
+    # Get the datafile and load cogs
+    # ==================================================
     data = oap.getJson("data")
     cogs = data["cogs"]
     log = []
+
+    # ==================================================
+    # If no specific cog is given
+    # Go through every cog
+    # Try to load it - if that fails, try to reload it
+    # If *that* fails, throw an error
+    # ==================================================
     if cog == "all":
         for extension in cogs:
             try:
@@ -96,6 +121,11 @@ async def _reload(ctx, cog="all"):
         embed = oap.makeEmbed(title="Success!", description="\n".join(log), ctx=ctx)
         await ctx.send(embed=embed)
         oap.log(text="Reloaded all cogs", ctx=ctx)
+    
+    # ==================================================
+    # Otherwise (they gave a specific cog)
+    # Load/reload the specific cog and send output
+    # ==================================================
     else:
         _type = "loaded"
         try:
@@ -110,8 +140,15 @@ async def _reload(ctx, cog="all"):
         await ctx.send(embed=embed)
         oap.log(text=f"Reloaded {cog}", ctx=ctx)
 
+# ==================================================
+# If >>reload gets an error
+# ==================================================
 @_reload.error
 async def _reload_error(ctx, error):
+    # ==================================================
+    # If the user isnt the bot owner (failed the check)
+    # Say so and log to console
+    # ==================================================
     if isinstance(error, commands.CheckFailure):
         await oap.tryDelete(ctx)
         embed = oap.makeEmbed(title="Whoops!", description="Only the bot owner can reload cogs", ctx=ctx)

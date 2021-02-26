@@ -28,6 +28,9 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
 
         changed_to = None
 
+        # ==================================================
+        # Get values and switch them accordingly
+        # ==================================================
         if server_data.get("delete_invocation") == True:
             server_data["delete_invocation"] = False
             changed_to = "False"
@@ -35,6 +38,9 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             server_data["delete_invocation"] = True
             changed_to = "True"
 
+        # ==================================================
+        # Set data, send output, and log to console
+        # ==================================================
         embed = oap.makeEmbed(title="Success!", description=f"Invocation deletion for the server \"{ctx.guild.name}\" has been set to {changed_to}", ctx=ctx)
         await ctx.send(embed=embed)
         oap.setJson(f"servers/{ctx.guild.id}", server_data)
@@ -78,6 +84,9 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                 embed = oap.makeEmbed(title="Whoops!", description="Please enter an emoji to change to, or \"reset\"", ctx=ctx)
                 return await ctx.send(embed=embed)
 
+            # ==================================================
+            # Set variables
+            # ==================================================
             value = value.split(" ")
             which_emoji = value[0]
             emoji = value[1]
@@ -132,7 +141,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                     out = f"All default emoji have been set to {emoji}"
 
             # ==================================================
-            # Set data and send ouput
+            # Set data, send ouput, log to console
             # ==================================================
             server_data["poll"] = data
             oap.setJson(f"servers/{ctx.guild.id}", server_data)
@@ -161,7 +170,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                 data["delete_invocation"] = False
 
             # ==================================================
-            # Set data and send output
+            # Set data, send output, log to console
             # ==================================================
             server_data["poll"] = data
             oap.setJson(f"servers/{ctx.guild.id}", server_data)
@@ -206,17 +215,20 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         if category == "color":
             # ==================================================
             # Check if they input nothing
+            # Give them information if they did
             # ==================================================
             if input == "":
                 if user_data.get("color"):
                     embed = oap.makeEmbed(title="Here You Go!", description=f"Your color is {hex(user_data['color'])}", ctx=ctx)
                     return await ctx.send(embed=embed)
                 else:
-                    embed = oap.makeEmbed(title="Whoops!", description=f"You dont have a color yet", ctx=ctx)
+                    embed = oap.makeEmbed(title="Whoops!", description=f"You dont have a color yet\nSet one with >>user_settings color [hex codee]", ctx=ctx)
                     return await ctx.send(embed=embed)
 
             # ==================================================
             # Check if they input "reset"
+            # If so, just delete their set color
+            # Then send output and log to console
             # ==================================================
             if input == "reset":
                 del user_data["color"]
@@ -228,7 +240,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
 
             # ==================================================
             # Get rid of any starting hashtag
-            # And check if they gave a valid color
+            # And check if they gave a valid length color
             # ==================================================
             if input.startswith("#"):
                 input = input[1:]
@@ -236,12 +248,21 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                 embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid hex code for your color", ctx=ctx)
                 return await ctx.send(embed=embed)
 
+            # ==================================================
+            # Try making the color an integer
+            # If it doesnt work, say so
+            # ==================================================
             try:
                 color = int(f"0x{input}", 16)
             except:
                 embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid hex code for your color", ctx=ctx)
                 return await ctx.send(embed=embed)
 
+            # ==================================================
+            # Set their data
+            # Send output
+            # Log to console
+            # ==================================================
             user_data["color"] = color
             oap.setJson(f"users/{ctx.author.id}", user_data)
     
