@@ -7,6 +7,11 @@ import discord
 
 
 # ==================================================
+# TODO: Poll timers
+# ==================================================
+
+
+# ==================================================
 # Initialization
 # ==================================================
 oap.clear()
@@ -47,6 +52,10 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.CommandNotFound):
         return
+    if isinstance(error, discord.ext.commands.MissingPermissions):
+        embed = oap.makeEmbed(title="Whoops!", description="You dont have the correct permissions to do that command", ctx=ctx)
+        await ctx.send(embed=embed)
+        return oap.log(text=f"Tried to do a command they dont have permission to do", ctx=ctx)
     author = await abacus.fetch_user(184474965859368960)
     embed1 = oap.makeEmbed(title="Yikes", description="```" + "\n".join(traceback.format_tb(error.original.__traceback__)) + "```")
     embed1.add_field(name="Command", value=ctx.message.content.split(" ")[0], inline=True)
