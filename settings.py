@@ -17,10 +17,10 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
 
 
     # ==================================================
-    # Toggle delete invocation command
-    # TODO: only server managers can change this    
+    # Toggle delete invocation command 
     # ==================================================
     @commands.command(brief="Toggle whether or not to delete invocation messages", help="By default, Abacus doesn't delete invocation messages (the message with the command in it). If this is on, Abacus will delete those messages.")
+    @commands.has_permissions(manage_guild=True)
     async def toggle_delete_invocation(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -45,6 +45,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # Poll settings command
     # ==================================================
     @commands.command(brief="Change default settings for the poll command", usage="[category] [setting]", help="")
+    @commands.has_permissions(manage_guild=True)
     async def poll_settings(self, ctx, category="", *, value=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
