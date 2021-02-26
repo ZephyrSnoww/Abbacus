@@ -205,6 +205,17 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         if category == "color":
             # ==================================================
+            # Check if they input nothing
+            # ==================================================
+            if input == "":
+                if user_data.get("color"):
+                    embed = oap.makeEmbed(title="Here You Go!", description=f"Your color is {hex(user_data['color'])}", ctx=ctx)
+                    return await ctx.send(embed=embed)
+                else:
+                    embed = oap.makeEmbed(title="Whoops!", description=f"You dont have a color yet", ctx=ctx)
+                    return await ctx.send(embed=embed)
+
+            # ==================================================
             # Check if they input "reset"
             # ==================================================
             if input == "reset":
