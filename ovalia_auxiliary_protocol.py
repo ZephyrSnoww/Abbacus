@@ -32,7 +32,7 @@ async def tryDelete(_ctx):
 def makeEmbed(title="TITLE", description="DESCRIPTION", color=0xffadb6, ctx=None):
     _out = discord.Embed(title=title, description=description, color=color, timestamp=datetime.now())
     if ctx:
-        _out.set_author(name=ctx.author.nick, icon_url=ctx.author.avatar_url)
+        _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
     return _out
 
 
