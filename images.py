@@ -24,7 +24,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # Testcolor command
     # ==================================================
     @commands.command(brief="Test a color by hexadecimal value", help="")
-    async def testcolor(self, ctx, color=""):
+    async def testcolor(self, ctx, color="", transparent=False):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
@@ -51,7 +51,10 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         # ==================================================
         old_color = f"{color}"
         color = oap.hexToRGB(color)
-        img = Image.new("RGB", (235, 115), color=color)
+        if not transparent:
+            img = Image.new("RGB", (235, 115), color=color)
+        else:
+            img = Image.new("RGBA", (235, 115), color=(0, 0, 0, 0))
         req = Request(str(ctx.author.avatar_url_as(static_format="png", size=32)), headers={"User-Agent": "Mozilla/5.0"})
         avatar = Image.open(urlopen(req))
         draw = ImageDraw.Draw(img)
@@ -70,14 +73,14 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         # Drawing everything on the image
         # ==================================================
         draw.text((7, 4), ("#%s" % old_color).upper(), tuple(darker), font=font)
-        draw.text((5, 2), ("#%s" % old_color).upper(), (255, 255, 255), font=font)
+        draw.text((5, 2), ("#%s" % old_color).upper(), ((255, 255, 255) if not transparent else color), font=font)
         draw.text((150, 4), ("#%02x%02x%02x" % tuple(lighter)).upper(), tuple(lighter), font=font2)
         draw.text((150, 4), ("\n#%02x%02x%02x" % tuple(light)).upper(), tuple(light), font=font2)
         draw.text((150, 4), ("\n\n#%02x%02x%02x" % tuple(dark)).upper(), tuple(dark), font=font2)
         draw.text((150, 2), ("\n\n\n#%02x%02x%02x" % tuple(darker)).upper(), tuple(darker), font=font2)
 
         draw.text((43, 115-21), ctx.author.nick if ctx.author.nick else ctx.author.name, tuple(darker), font=font2)
-        draw.text((41, 115-23), ctx.author.nick if ctx.author.nick else ctx.author.name, (255, 255, 255), font=font2)
+        draw.text((41, 115-23), ctx.author.nick if ctx.author.nick else ctx.author.name, ((255, 255, 255) if not transparent else color), font=font2)
 
         # ==================================================
         # Adding the authors avatar
