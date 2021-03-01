@@ -1,5 +1,6 @@
 import ovalia_auxiliary_protocol as oap
 from discord.ext import tasks, commands
+from os import path, makedirs, listdir
 from importlib import reload
 from random import randint
 import requests as r
@@ -236,7 +237,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # Rolling stats
     # ==================================================
     @commands.command(brief="", usage="", help="")
-    async def rollstats(self, ctx, *, _in=""):
+    async def roll_stats(self, ctx, *, _in=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
@@ -315,6 +316,167 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         embed = oap.makeEmbed(title="Rolled stats!", description=(", ".join([str(roll) for roll in rolls])) if (not ordered and not random) else ("\n".join([f"{key.title()}: {value}" for key, value in stats.items()])), ctx=ctx)
         await ctx.send(embed=embed)
         oap.log(text="Rolled stats", cog="DND", color="magenta", ctx=ctx)
+
+
+    # ==================================================
+    # Import a character
+    # ==================================================
+    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".")
+    async def import_character(self, ctx, name=""):    
+        # ==================================================
+        # Check for an input name
+        # Check for attached json file
+        # ==================================================
+        if name == "":
+            embed = oap.makeEmbed(title="Whoops!", description="Please input a name for the character", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        if len(ctx.message.attachments) == 0 or not ctx.message.attachments[0].filename.endswith(".json"):
+            embed = oap.makeEmbed(title="Whoops!", description="Please attach a valid .json file", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # If the author doesnt have a characters folder
+        # Make it, then
+        # Download the attached json
+        # ==================================================
+        if not path.exists(f"characters/{ctx.author.id}"):
+            makedirs(f"characters/{ctx.author.id}")
+        await ctx.message.attachments[0].save(f"characters/{ctx.author.id}/{name}.json")
+    
+        # ==================================================
+        # Delete message
+        # Send output
+        # Log to console
+        # ==================================================
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+        embed = oap.makeEmbed(title="Success!", description=f"The character \"{name}\" has been added", ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Added a character", cog="DND", color="magenta", ctx=ctx)
+
+
+    # ==================================================
+    # List characters
+    # ==================================================
+    @commands.command(brief="List all characters you have imported", usage="", help="")
+    async def characters(self, ctx):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Check if the user has a characters folder
+        # ==================================================
+        if not path.exists(f"characters/{ctx.author.id}"):
+            embed = oap.makeEmbed(title="Whoops!", description="You don't have any characters\nImport one from foundry with >>import_character", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================    
+        embed = oap.makeEmbed(title=f"{ctx.author.name}'s Characters", description="- " + "\n- ".join([file[:-5] for file in listdir(f"characters/{ctx.author.id}")]), ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Listed characters", cog="DND", color="magenta", ctx=ctx)
+
+
+    # ==================================================
+    # Character information
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def character(self, ctx, character=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Check if they supplied a character
+        # Check if they have that character
+        # ==================================================
+        if character == "":
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter a characters name", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        if not path.exists(f"characters/{ctx.author.id}"):
+            embed = oap.makeEmbed(title="Whoops!", description="You dont have any characters\nImport one from foundry with >>import_character", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        if not path.exists(f"characters/{ctx.author.id}/{character}.json"):
+            embed = oap.makeEmbed(title="Whoops!", description="I couldn't find that character\nCheck capital letters, and make sure you spelled it right\nList your characters with >>characters", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # Load the characters file
+        # ==================================================
+        character = oap.getJson(f"characters/{ctx.author.id}/{character}")
+        character_data = character["data"]
+        abilities = character_data["abilities"]
+        attributes = character_data["attributes"]
+        details = character_data["details"]
+        traits = character_data["traits"]
+        currency = character_data["currency"]
+        skills = character_data["skills"]
+        spells = character_data["spells"]
+        bonuses = character_data["bonuses"]
+        resources = character_data["resources"]
+        items = character["items"]
+
+        levels = {
+            300: 1,
+            900: 2,
+            2700: 3,
+            6500: 4,
+            14000: 5,
+            23000: 6,
+            34000: 7,
+            48000: 8,
+            64000: 9,
+            85000: 10,
+            100000: 11,
+            120000: 12,
+            140000: 13,
+            165000: 14,
+            195000: 15,
+            225000: 16,
+            265000: 17,
+            305000: 18,
+            355000: 19
+        }
+
+        # ==================================================
+        # If they didnt give anything other than a name
+        # Start formatting the embed
+        # ==================================================
+        character_class = ""
+        for value in items:
+            if value.get("type") == "class":
+                character_class = value.get("name")
+
+        movement = [((f"**{key}:** {value} ft.") if value and (key != "units") else "") for key, value in attributes["movement"].items()]
+        movement = "\n" + "\n".join(list(filter(lambda value: value != "", movement)))
+
+        senses = [((f"**{key}:** {value} ft.") if value and (key != "units") not in [0, ""] else "") for key, value in attributes["senses"].items()]
+        senses = "\n" + "\n".join(list(filter(lambda value: value != "", senses)))
+
+        embed = oap.makeEmbed(title=character.get('name'), description=f"""*Level {levels[details["xp"]["max"]]} {details["race"]} {character_class}*
+
+**AC:** {attributes['ac']['value']}
+**HP:** {attributes['hp']['value']}/{attributes['hp']['max']}
+**Initiative:** {attributes['init']['value']} (+{attributes['init']['bonus']} bonus)
+
+**Movement:**{movement}
+
+{f"**Senses:**{senses}" if len(senses) > 1 else ""}
+""", ctx=ctx)
+
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================
+        await ctx.send(embed=embed)
+        oap.log(text=f"Got info on the {character['name']} character", cog="DND", color="magenta", ctx=ctx)
 
 
 # ==================================================
