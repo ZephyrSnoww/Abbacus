@@ -404,7 +404,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # Character information
     # ==================================================
     @commands.command(brief="", usage="", help="", aliases=["char", "ch"])
-    async def character(self, ctx, character=""):
+    async def character(self, ctx, character="", specific_info=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
@@ -443,11 +443,6 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
             items = character["items"]
             linebreak = "\n"
 
-        # ==================================================
-        # If they didnt give anything other than a name
-        # Start formatting the embed
-        # ==================================================
-        if True:
             character_class = ""
             character_items = [""]
             character_spells = [""]
@@ -461,6 +456,25 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
                 if value.get("type") == "spell":
                     character_spells.append(value.get("name"))
 
+        # ==================================================
+        # If they asked for details
+        # ==================================================
+        if specific_info == "details":
+            embed = oap.makeEmbed(title=character.get("name"), description=f"""*Level {character_level} {details["race"]} {character_class}{f" ({character_subclass})" if character_subclass else ""}*
+
+            **Alignment:** {details["alignment"]}
+
+            **Trait:** {details["trait"]}
+            **Ideal:** {details["ideal"]}
+            **Bond:** {details["bond"]}
+            **Flaw:** {details["flaw"]}
+            """)
+
+        # ==================================================
+        # If they didnt give anything other than a name
+        # Start formatting the embed
+        # ==================================================
+        else:
             movement = [((f"**{key}:** {value} ft.") if value and (key != "units") else "") for key, value in attributes["movement"].items()]
             movement = "\n".join(list(filter(lambda value: value != "", movement)))
 
@@ -474,7 +488,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
             **Initiative:** {attributes['init']['value']} (+{attributes['init']['bonus']} bonus)
             """, ctx=ctx)
 
-            embed.add_field(name="Ability Scores", value=)
+            # embed.add_field(name="Ability Scores", value=)
             if len(movement) > 1:
                 embed.add_field(name="Movement", value=movement)
             if len(senses) > 1:
