@@ -26,7 +26,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # General "get"/"lookup" command
     # ==================================================
-    @commands.command(brief="", usage="", help="", aliases=["get"])
+    @commands.command(brief="", usage="", help="", aliases=["get"], enabled=False)
     async def lookup(self, ctx, category="categories", item="", *, other=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -462,14 +462,14 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
 
         embed = oap.makeEmbed(title=character.get('name'), description=f"""*Level {levels[details["xp"]["max"]]} {details["race"]} {character_class}*
 
-**AC:** {attributes['ac']['value']}
-**HP:** {attributes['hp']['value']}/{attributes['hp']['max']}
-**Initiative:** {attributes['init']['value']} (+{attributes['init']['bonus']} bonus)
+        **AC:** {attributes['ac']['value']}
+        **HP:** {attributes['hp']['value']}/{attributes['hp']['max']}
+        **Initiative:** {attributes['init']['value']} (+{attributes['init']['bonus']} bonus)
 
-**Movement:**{movement}
+        **Movement:**{movement}
 
-{f"**Senses:**{senses}" if len(senses) > 1 else ""}
-""", ctx=ctx)
+        {f"**Senses:**{senses}" if len(senses) > 1 else ""}
+        """, ctx=ctx)
 
         # ==================================================
         # Send output
@@ -477,6 +477,29 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # ==================================================
         await ctx.send(embed=embed)
         oap.log(text=f"Got info on the {character['name']} character", cog="DND", color="magenta", ctx=ctx)
+
+
+    # ==================================================
+    # Generate a calendar
+    # ==================================================
+    @commands.command(brief="", usage="", help="", enabled=False)
+    async def generate_calendar(self, ctx, *, args=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Arg checking and validation
+        # ==================================================
+
+
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================
+        embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="PLACEHOLDER", cog="PLACEHOLDER", color="PLACEHOLDER", ctx=ctx)
 
 
 # ==================================================
