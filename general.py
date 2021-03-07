@@ -1,9 +1,15 @@
+from datetime import datetime, timedelta
 import ovalia_auxiliary_protocol as oap
+from random import randint, choice
 from discord.ext import commands
 from importlib import reload
-from random import randint, choice
+import requests as r
 import numpy as np
+import emoji as em
 import discord
+import nasapy
+import regex
+import math
 import re
 
 
@@ -11,6 +17,8 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     def __init__(self, bot):
         self.abacus = bot
         self.data = oap.getJson("data")
+        self.nasa_key = ""
+        self.nasa = nasapy.Nasa(key=self.nasa_key)
 
     # ==================================================
     # Unload event
@@ -221,7 +229,12 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         # ==================================================
         # Get all emoji in the message
         # ==================================================        
-        emojis = [text.group() for text in re.finditer(r"<:([^\s<>]+):(\d{18})>", input)]
+        emojis = [text.group() for text in re.finditer(r"(:([^\s:]+):(?!\d))|(<(:|(a:))([^\s<>]+):(\d{18})>)", em.demojize(input))]
+
+        for i in range(len(emojis)):
+            if "<" not in emojis[i]:
+                temp = emojis[i]
+                emojis[i] = (em.emojize(temp))
     
         # ==================================================
         # If they didnt enter a poll,
@@ -264,6 +277,163 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         # Log to console
         # ==================================================
         oap.log(text="Made a poll", cog="General", color="cyan", ctx=ctx)
+
+
+    # ==================================================
+    # Time until command
+    # ==================================================
+    @commands.command(brief="", usage="", help="", aliases=["t-minus"])
+    async def time_until(self, ctx, date=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+
+        # ==================================================
+        # Arg error checking
+        # ==================================================
+        if date == "":
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter a date", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # If the date has a colon
+        # (its a time)
+        # ==================================================
+        if ":" in date:
+            date = date + " " + datetime.now().strftime("%d/%m/%Y")
+            try:
+                date_obj = datetime.strptime(date, "%H:%M %d/%m/%Y")
+            except ValueError:
+                try:
+                    date_obj = datetime.strptime(date, "%H:%M:%S %d/%m/%Y")
+                except ValueError:
+                    embed = oap.makeEmbed(title="Whoops!", description="That wasnt a valid time format\nEnter a time (Hour:Minute, like 16:30) or date (Day/Month/Year, like 3/4/21)", ctx=ctx)
+                    return await ctx.send(embed=embed)
+            
+            difference = (date_obj - datetime.now()).total_seconds()
+            diff_type = "There are (difference) seconds to go until (time)"
+            if difference >= 3600:
+                difference /= 60
+                difference /= 60
+                diff_type = "There are (difference) hours to go until (time)"
+            elif difference >= 60:
+                difference /= 60
+                diff_type = "There are (difference) minutes to go until (time)"
+            elif difference == 0:
+                diff_type = "It is currently (time)"
+            elif difference > -60:
+                diff_type = "(time) happened (difference) seconds ago"
+            elif difference > -3600:
+                difference /= 60
+                diff_type = "(time) happened (difference) minutes ago"
+            else:
+                difference /= 60
+                difference /= 60
+                diff_type = "(time) happened (difference) hours ago"
+
+            difference = math.ceil(difference)
+
+            if difference == 1:
+                diff_type = diff_type.replace("are", "is")
+                diff_type = diff_type.replace("seconds", "second")
+                diff_type = diff_type.replace("minutes", "minute")
+                diff_type = diff_type.replace("hours", "hour")
+
+            if difference < 0:
+                difference = -difference
+
+            time_string = date_obj.strftime("%H:%M:%S")
+            diff_type = diff_type.replace("(difference)", str(difference))
+            diff_type = diff_type.replace("(time)", time_string)
+
+        # ==================================================
+        # If the date had a slash
+        # (its a date)
+        # ==================================================
+        elif "/" in date:
+            try:
+                date_obj = datetime.strptime(date, "%d/%m/%Y")
+            except ValueError:
+                embed = oap.makeEmbed(title="Whoops!", description="That wasnt a valid time format\nEnter a time (Hour:Minute, like 16:30) or date (Day/Month/Year, like 03/04/2021)", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            difference = math.ceil((date_obj - datetime.now()).total_seconds() / 86400)
+            diff_type = "There are (difference) days to go until (time)"
+            if difference >= 365:
+                difference /= 365
+                diff_type = "There are (difference) years to go until (time)"
+            elif difference == 0:
+                diff_type = "It is currently (time)"
+            elif difference > -365 and difference < 0:
+                diff_type = "(time) happened (difference) days ago"
+            elif difference <= -365:
+                difference /= 365
+                diff_type = "(time) happened (difference) years ago"
+
+            difference = math.ceil(difference)
+
+            if difference == 1:
+                diff_type = diff_type.replace("are", "is")
+                diff_type = diff_type.replace("days", "day")
+                diff_type = diff_type.replace("years", "year")
+
+            if difference < 0:
+                difference = -difference
+
+            time_string = date_obj.strftime("%d/%m/%Y")
+            diff_type = diff_type.replace("(difference)", str(difference))
+            diff_type = diff_type.replace("(time)", time_string)
+
+        else:
+            embed = oap.makeEmbed(title="Whoops!", description="That wasnt a valid time format\nEnter a time (Hour:Minute, like 16:30) or date (Day/Month/Year, like 03/04/2021)", ctx=ctx)
+            return await ctx.send(embed=embed)
+    
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================
+        embed = oap.makeEmbed(title="Here You Go!", description=diff_type, ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text=f"Got the time until {time_string}", cog="General", color="cyan", ctx=ctx)
+
+
+    # ==================================================
+    # NASA
+    # ==================================================
+    @commands.command(brief="", usage="", help="", enabled=False)
+    async def nasa(self, ctx, *, args=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        if args == "":
+            return await ctx.send(self.nasa.picture_of_the_day()["hdurl"])
+
+        if args == "exoplanets":
+            return await ctx.send(str(nasapy.exoplanets())[:2000])
+
+        if args == "epic":
+            return await ctx.send(str(self.nasa.epic(date=(datetime.now() - timedelta(2))))[:2000])
+
+        if args.split(" ")[0] == "search":
+            return await ctx.send(str(re.sub(r' ', '%20', "\n".join(r.get(url=(nasapy.media_search(query=args[6:])["items"])[0]["href"]).json())))[:2000])
+
+        # image = self.nasa.earth_imagery(lat=float(args.split(" ")[0]), lon=float(args.split(" ")[1]), date=datetime.now() - timedelta(days=365))
+        req = r.get(url="https://api.nasa.gov/planetary/earth/imagery/", params = {
+            "lon": float(args.split(" ")[1]),
+            "lat": float(args.split(" ")[0]),
+            "dim": float(args.split(" ")[2]),
+            "date": (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d"),
+            "cloud_score": False,
+            "api_key": self.nasa_key
+        }, headers={'accept': 'application/json'})
+        with open("images/nasa.png", "wb") as file:
+            file.write(req.content)
+        await ctx.send(file=discord.File("images/nasa.png"))
+    
+        # embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
+        # await ctx.send(embed=embed)
+        # oap.log(text="PLACEHOLDER", cog="PLACEHOLDER", color="PLACEHOLDER", ctx=ctx)
 
 
 # ==================================================
