@@ -3,6 +3,7 @@ import ovalia_auxiliary_protocol as oap
 from random import randint, choice
 from discord.ext import commands
 from importlib import reload
+from os import path, listdir
 import requests as r
 import numpy as np
 import emoji as em
@@ -30,11 +31,97 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Roll command
     # ==================================================
-    @commands.command(brief="Roll a die (1d20 by default)", usage="[die=1d20] [individual_mod=False] [remove=None]", help="Dice rolling, D&D style.\n1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides. You can add +[number] to the end to add a modifier (e.g. 2d6+4)\n\nBy default, the modifier is added to the total of all rolls. Use individual_mod=True to apply it to each roll individually.\n\nCross out a number of lowest or highest values, using remove=highest or remove=3lowest.")
+    @commands.command(brief="Roll a die (1d20 by default)", usage="[die=1d20] [individual_mod=False] [remove=None]", help="Dice rolling, D&D style.\n1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides. You can add +[number] to the end to add a modifier (e.g. 2d6+4)\n\nBy default, the modifier is added to the total of all rolls. Use individual_mod=True to apply it to each roll individually.\n\nCross out a number of lowest or highest values, using remove=highest or remove=3lowest.\n\nIf you've imported characters with >>import_character, you can roll character-specific die (e.g. \">>roll Brooklynn cha\" or \">>roll Brooklynn per\")\nDo >>list_skills to list all available skills you can roll.\nWhen using this, add \"adv\" or \"dis\" to roll with advantage or disadvantage, and \"save\" to roll a saving throw.")
     async def roll(self, ctx, die="1d20", *, args=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
+
+        # ==================================================
+        # If the author has characters imported
+        # If the "die" arg is the name of a character
+        # ==================================================
+        if path.exists(f"characters/{ctx.author.id}"):
+            if die in [file[:-5] for file in listdir(f"characters/{ctx.author.id}")]:
+                # ==================================================
+                # Get the characters stats
+                # Initialize various misc variables
+                # ==================================================
+                character = oap.getJson(f"characters/{ctx.author.id}/{die}")
+                advantage = False
+                disadvantage = False
+                save = False
+                prof_bonus = 0
+
+                if character["data"]["attributes"].get("prof"):
+                    prof_bonus = character["data"]["attributes"]["prof"]
+
+                if "adv" in args.split(" "):
+                    advantage = True
+                if "dis" in args.split(" "):
+                    disadvantage = True
+                if "save" in args.split(" "):
+                    save = True
+
+                # ==================================================
+                # If theyre rolling a flat ability check
+                # ==================================================
+                if args.split(" ")[0] in list(oap.abilities.keys()):
+                    # ==================================================
+                    # Get their ability mod
+                    # Check for advantage/disadvantage/save
+                    # ==================================================
+                    mod = oap.mods[character["data"]["abilities"][args.split(" ")[0]]["value"]]
+
+                    # ==================================================
+                    # If theyre rolling a saving throw
+                    # Add their proficiency bonus (if any)
+                    # ==================================================
+                    if save:
+                        mod += (prof_bonus * character["data"]["abilities"][args.split(" ")[0]]["proficient"])
+
+                    # ==================================================
+                    # Make the output string
+                    # ==================================================
+                    output = f"{oap.abilities[args.split(' ')[0]]} {'Save' if save else 'Roll'} (+{mod}) for {die}{f' (Advantage)' if advantage else (' (Disadvantage)' if disadvantage else '')}"
+
+                # ==================================================
+                # If theyre rolling a skill
+                # ==================================================
+                elif args.split(" ")[0] in list(oap.skills.keys()):
+                    # ==================================================
+                    # Get their base skill mod
+                    # Then add proficiency bonus, if theyre proficient
+                    # ==================================================
+                    mod = oap.mods[character["data"]["abilities"][character["data"]["skills"][args.split(" ")[0]]["ability"]]["value"]]
+                    mod += math.floor(prof_bonus * character["data"]["skills"][args.split(" ")[0]]["value"])
+
+                    output = f"{oap.skills[args.split(' ')[0]]} ({oap.abilities[character['data']['skills'][args.split(' ')[0]]['ability']]}) {'Save' if save else 'Roll'} (+{mod}) for {die}{f' (Advantage)' if advantage else (' (Disadvantage)' if disadvantage else '')}"
+
+                # ==================================================
+                # If rolling with advantage or disadvantage
+                # Roll twice
+                # Otherwise just roll once
+                # ==================================================
+                if advantage or disadvantage:
+                    base_rolls = [randint(1, 20), randint(1, 20)]
+                else:
+                    base_rolls = [randint(1, 20)]
+
+                # ==================================================
+                # Add their modifier to the rolls
+                # ==================================================
+                rolls = [
+                    f"{roll + mod}{f' (natural {roll})' if roll in [1, 20] else ''}" for roll in base_rolls]
+
+                # ==================================================
+                # Send output
+                # Log to console
+                # ==================================================
+                embed = oap.makeEmbed(title=output, description=", ".join(rolls), ctx=ctx)
+                await ctx.send(embed=embed)
+                return oap.log(text=f"Rolled {args.split(' ')[0]} for the character \"{die}\"")
+
 
         # ==================================================
         # Error checking for any formatting problems

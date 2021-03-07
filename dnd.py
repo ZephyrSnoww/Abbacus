@@ -236,7 +236,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Rolling stats
     # ==================================================
-    @commands.command(brief="", usage="", help="")
+    @commands.command(brief="", usage="", help="", aliases=["rs"])
     async def roll_stats(self, ctx, *, _in=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -319,9 +319,27 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
 
 
     # ==================================================
+    # List skills
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def list_skills(self, ctx):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================
+        embed = oap.makeEmbed(title="Here Are All Skills", description="*- skill (abbreviation)*\n\n- " + "\n- ".join([f"{value} ({key})" for key, value in oap.skills.items()]), ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Listed skills", cog="DND", color="magenta", ctx=ctx)
+
+
+    # ==================================================
     # Import a character
     # ==================================================
-    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".")
+    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".", aliases=["import_char", "ic"])
     async def import_character(self, ctx, name=""):    
         # ==================================================
         # Check for an input name
@@ -360,7 +378,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # List characters
     # ==================================================
-    @commands.command(brief="List all characters you have imported", usage="", help="")
+    @commands.command(brief="List all characters you have imported", usage="", help="", aliases=["chars", "chs"])
     async def characters(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -385,8 +403,8 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Character information
     # ==================================================
-    @commands.command(brief="", usage="", help="")
-    async def character(self, ctx, character=""):
+    @commands.command(brief="", usage="", help="", aliases=["char", "ch"])
+    async def character(self, ctx, character="", specific_info=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
@@ -410,57 +428,60 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # ==================================================
         # Load the characters file
         # ==================================================
-        character = oap.getJson(f"characters/{ctx.author.id}/{character}")
-        character_data = character["data"]
-        abilities = character_data["abilities"]
-        attributes = character_data["attributes"]
-        details = character_data["details"]
-        traits = character_data["traits"]
-        currency = character_data["currency"]
-        skills = character_data["skills"]
-        spells = character_data["spells"]
-        bonuses = character_data["bonuses"]
-        resources = character_data["resources"]
-        items = character["items"]
+        if True:
+            character = oap.getJson(f"characters/{ctx.author.id}/{character}")
+            character_data = character["data"]
+            abilities = character_data["abilities"]
+            attributes = character_data["attributes"]
+            details = character_data["details"]
+            traits = character_data["traits"]
+            currency = character_data["currency"]
+            skills = character_data["skills"]
+            spells = character_data["spells"]
+            bonuses = character_data["bonuses"]
+            resources = character_data["resources"]
+            items = character["items"]
+            linebreak = "\n"
 
-        levels = {
-            300: 1,
-            900: 2,
-            2700: 3,
-            6500: 4,
-            14000: 5,
-            23000: 6,
-            34000: 7,
-            48000: 8,
-            64000: 9,
-            85000: 10,
-            100000: 11,
-            120000: 12,
-            140000: 13,
-            165000: 14,
-            195000: 15,
-            225000: 16,
-            265000: 17,
-            305000: 18,
-            355000: 19
-        }
+            character_class = ""
+            character_items = [""]
+            character_spells = [""]
+            for value in items:
+                if value.get("type") == "class":
+                    character_class = value.get("name")
+                    character_level = value.get("data").get("levels")
+                    character_subclass = value.get("data").get("subclass")
+                if value.get("type") not in ["class", "feat", "spell"]:
+                    character_items.append(value.get("name"))
+                if value.get("type") == "spell":
+                    character_spells.append(value.get("name"))
+
+        # ==================================================
+        # If they asked for details
+        # ==================================================
+        if specific_info == "details":
+            embed = oap.makeEmbed(title=character.get("name"), description=f"""*Level {character_level} {details["race"]} {character_class}{f" ({character_subclass})" if character_subclass else ""}*
+
+            **Alignment:** {details["alignment"]}
+
+            **Trait:** {details["trait"]}
+            **Ideal:** {details["ideal"]}
+            **Bond:** {details["bond"]}
+            **Flaw:** {details["flaw"]}
+            """)
 
         # ==================================================
         # If they didnt give anything other than a name
         # Start formatting the embed
         # ==================================================
-        character_class = ""
-        for value in items:
-            if value.get("type") == "class":
-                character_class = value.get("name")
+        else:
+            movement = [((f"**{key}:** {value} ft.") if value and (key != "units") else "") for key, value in attributes["movement"].items()]
+            movement = "\n".join(list(filter(lambda value: value != "", movement)))
 
-        movement = [((f"**{key}:** {value} ft.") if value and (key != "units") else "") for key, value in attributes["movement"].items()]
-        movement = "\n" + "\n".join(list(filter(lambda value: value != "", movement)))
+            senses = [((f"**{key}:** {value} ft.") if value and (key != "units") not in [0, ""] else "") for key, value in attributes["senses"].items()]
+            senses = "\n".join(list(filter(lambda value: value != "", senses)))
 
-        senses = [((f"**{key}:** {value} ft.") if value and (key != "units") not in [0, ""] else "") for key, value in attributes["senses"].items()]
-        senses = "\n" + "\n".join(list(filter(lambda value: value != "", senses)))
-
-        embed = oap.makeEmbed(title=character.get('name'), description=f"""*Level {levels[details["xp"]["max"]]} {details["race"]} {character_class}*
+            embed = oap.makeEmbed(title=character.get('name'), description=f"""*Level {character_level} {details["race"]} {character_class}{f" ({character_subclass})" if character_subclass else ""}*
 
         **AC:** {attributes['ac']['value']}
         **HP:** {attributes['hp']['value']}/{attributes['hp']['max']}
