@@ -1,7 +1,9 @@
 import ovalia_auxiliary_protocol as oap
 from discord.ext import tasks, commands
 from importlib import reload
+import emoji as em
 import discord
+import re
 
 
 class Settings(commands.Cog, description="Settings, per-server or per-user"):
@@ -189,7 +191,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # User settings command
     # ==================================================
-    @commands.command(brief="", usage="", help="")
+    @commands.command(brief="Change your user settings", usage="[category] [value]", help="")
     async def user_settings(self, ctx, category="", *, input=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         user_data = oap.getJson(f"users/{ctx.author.id}")
@@ -269,6 +271,140 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             embed = oap.makeEmbed(title="Success!", description=f"Your color has been set to 0x{input}", ctx=ctx)
             await ctx.send(embed=embed)
             oap.log(text="Changed their user color", cog="Settings", color="yellow", ctx=ctx)
+
+
+    # ==================================================
+    # Hall of fame and shame config
+    # ==================================================
+    @commands.command(brief="Change hall of fame and shame settings", usage="[fame or shaem] [setting] [value]", help="")
+    @commands.has_permissions(manage_guild=True)
+    async def hall_settings(self, ctx, which="", setting="", *, input=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Argument checking
+        # ==================================================
+        if which == "":
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter the hall you want to change settings for (fame or shame)", ctx=ctx)
+            return await ctx.send(embed=embed)
+        
+        if which not in ["fame", "shame"]:
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter either fame or shame as the hall you want to change", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        default = {
+            "fame": {
+                "emoji": "⬆️",
+                "requirement": 4,
+                "channel": None,
+                "message": "[user] was sent to the hall of fame!"
+            },
+            "shame": {
+                "emoji": "⬇️",
+                "requirement": 4,
+                "channel": None,
+                "message": "[user] was sent to the hall of shame!"
+            }
+        }
+
+        # ==================================================
+        # If they didnt input a setting to change
+        # Just give them current settings
+        # ==================================================
+        if setting == "":
+            embed = oap.makeEmbed(title=f"Current Hall of {which.title()} Settings", description=f"*Any of these can be changed*")
+
+            # ==================================================
+            # If the server data exists
+            # Use it
+            # ==================================================
+            if server_data.get("halls"):
+                embed.add_field(name="Emoji", value=server_data.get("halls").get(which).get("emoji"))
+                embed.add_field(name="Requirement", value=server_data.get("halls").get(which).get("requirement"))
+                embed.add_field(name="Channel", value=server_data.get("halls").get(which).get("channel"))
+                embed.add_field(name="Message", value=server_data.get("halls").get(which).get("message"))
+
+                # ==================================================
+                # Send output
+                # Log to console
+                # ==================================================
+                await ctx.send(embed=embed)
+                return oap.log(text=f"Got hall of {which} settings", cog="Settings", color="yellow", ctx=ctx)
+
+            # ==================================================
+            # If the server data doesnt exist
+            # Give defaults
+            # ==================================================
+            embed.add_field(name="Emoji", value="⬆️" if which == "fame" else "⬇️")
+            embed.add_field(name="Requirement", value="4")
+            embed.add_field(name="Channel", value="None")
+            embed.add_field(name="Message", value=f"[user] was sent to the hall of {which}!")
+
+            # ==================================================
+            # Send output
+            # Log to console
+            # ==================================================
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Got hall of {which} settings", cog="Settings", color="yellow", ctx=ctx)
+
+        # ==================================================
+        # If they *did* give a setting to change
+        # Check if it's a valid setting
+        # ==================================================
+        if setting not in ["emoji", "requirement", "channel", "message"]:
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid setting to change", ctx=ctx)
+            embed.add_field(name="Valid Settings", value="- emoji\n- requirement\n- channel\n- message", inline=False)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # Check if the value they gave is valid
+        # ==================================================
+        if not server_data.get("halls"):
+            server_data["halls"] = default
+
+        if setting == "emoji":
+            if input == "reset":
+                input = "⬆️" if which == "fame" else "⬇️"
+            elif input not in em.UNICODE_EMOJI and not re.match(r"(:([^\s:]+):(?!\d))|(<(:|(a:))([^\s<>]+):(\d{18})>)", input):
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid emoji", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+        if setting == "requirement":
+            if input == "reset":
+                input = 4
+            try:
+                temp = int(input)
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid number", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+        if setting == "channel":
+            if input == "reset":
+                input = "None"
+            if not isinstance(input, discord.Channel) and not input == "None":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid channel", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+        if setting == "message":
+            if input == "reset":
+                input = f"[user] was sent to the hall of {which}!"
+
+        old_value = server_data["halls"][which][setting]
+        server_data["halls"][which][setting] = None if input == "None" else input
+        
+        # ==================================================
+        # Save data
+        # Send output
+        # Log to console
+        # ==================================================
+        oap.setJson(f"servers/{ctx.guild.id}", server_data)
+        embed = oap.makeEmbed(title="Success!", description=f"Successfully changed the hall of {which}'s {setting}", ctx=ctx)
+        embed.add_field(name="Old Value", value=str(old_value), inline=False)
+        embed.add_field(name="New Value", value=str(input))
+        await ctx.send(embed=embed)
+        oap.log(text="Changed a hall setting", cog="Settings", color="yellow", ctx=ctx)
 
 
 # ==================================================
