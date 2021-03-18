@@ -57,6 +57,18 @@ async def on_ready():
 
 
 # ==================================================
+# On guild join / leave
+# Log to console
+# ==================================================
+async def on_guild_join(guild):
+    oap.log(text=f"Joined \"{guild.name}\"")
+
+
+async def on_guild_remove(guild):
+    oap.log(text=f"Left \"{guild.name}\"")
+
+
+# ==================================================
 # On a command error
 # If the command wasnt found, do nothing
 # If they didnt have permission to do the cmomand, say so
