@@ -383,7 +383,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         if setting == "channel":
             if input == "reset":
                 input = "None"
-            if not isinstance(input, discord.Channel) and not input == "None":
+            if not re.match(r"(<#(\d+)>)", input) and input != "None":
                 embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid channel", ctx=ctx)
                 return await ctx.send(embed=embed)
 
