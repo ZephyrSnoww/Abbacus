@@ -8,8 +8,8 @@ import requests as r
 import numpy as np
 import emoji as em
 import discord
+import numexpr
 import nasapy
-import regex
 import math
 import re
 
@@ -521,6 +521,38 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         # embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
         # await ctx.send(embed=embed)
         # oap.log(text="PLACEHOLDER", cog="PLACEHOLDER", color="PLACEHOLDER", ctx=ctx)
+
+
+    # ==================================================
+    # Math
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def math(self, ctx, *, input=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        if input == "":
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter a formula", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        output = str(numexpr.evaluate(input).item())
+    
+        embed = oap.makeEmbed(title="Here You Go!", description=output, ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Did some math", cog="General", color="cyan", ctx=ctx)
+
+
+    # ==================================================
+    # Invite
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def invite(self, ctx):
+        await oap.tryDelete(ctx)
+    
+        embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=43072&scope=bot", ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Got an invite link", cog="general", color="cyan", ctx=ctx)
 
 
 # ==================================================
