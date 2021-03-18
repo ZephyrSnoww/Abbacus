@@ -376,6 +376,9 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                 input = 4
             try:
                 temp = int(input)
+                if temp < 1:
+                    embed = oap.makeEmbed(title="Whoops!", description="Please enter a positive, nonzero integer", ctx=ctx)
+                    return await ctx.send(embed=embed)
             except:
                 embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid number", ctx=ctx)
                 return await ctx.send(embed=embed)
