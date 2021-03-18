@@ -276,7 +276,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Hall of fame and shame config
     # ==================================================
-    @commands.command(brief="Change hall of fame and shame settings", usage="[fame or shaem] [setting] [value]", help="")
+    @commands.command(brief="Change hall of fame and shame settings", usage="[fame, shame, or message] [setting] [value]", help="")
     @commands.has_permissions(manage_guild=True)
     async def hall_settings(self, ctx, which="", setting="", *, input=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -290,8 +290,8 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             embed = oap.makeEmbed(title="Whoops!", description="Please enter the hall you want to change settings for (fame or shame)", ctx=ctx)
             return await ctx.send(embed=embed)
         
-        if which not in ["fame", "shame"]:
-            embed = oap.makeEmbed(title="Whoops!", description="Please enter either fame or shame as the hall you want to change", ctx=ctx)
+        if which not in ["fame", "shame", "message"]:
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter either fame or shame as the hall you want to change\nYou can also enter 'message' to change how the message is formatted when someone gets put in a hall", ctx=ctx)
             return await ctx.send(embed=embed)
 
         default = {
@@ -299,48 +299,58 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                 "emoji": "⬆️",
                 "requirement": 4,
                 "channel": None,
-                "message": "[user] was sent to the hall of fame!"
+                "message": "[user] was sent to the hall of fame!",
+                "removal_message": "[user] was removed from the hall of fame!"
             },
             "shame": {
                 "emoji": "⬇️",
                 "requirement": 4,
                 "channel": None,
-                "message": "[user] was sent to the hall of shame!"
-            }
+                "message": "[user] was sent to the hall of shame!",
+                "removal_message": "[user] was removed from the hall of shame!"
+            },
+            "message": "**[user]:** [message]\n\n[attachments]"
         }
+
+        # ==================================================
+        # Check if server data exists
+        # If not, set to defaults
+        # ==================================================
+        if not server_data.get("halls"):
+            server_data["halls"] = default
+
+        # ==================================================
+        # If they entered to change the message
+        # Check if they entered a message
+        # ==================================================
+        if which == "message":
+            if setting == "":
+                embed = oap.makeEmbed(title="Whoops!", description="If you wish to change this, enter a message, surrouned by quotes\nYou can use discords formatting, and variables such as [user], [attachments], or [channel]", ctx=ctx)
+                embed.add_field(name="Current Message", value=server_data["halls"]["message"], inline=False)
+                return await ctx.send(embed=embed)
+            if not server_data.get("halls"):
+                server_data["halls"] = default
+            old_value = server_data.get("message")
+            server_data["message"] = setting
+
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Successfully changed the default message format\n\n*If this doesnt look correct, make sure you put the message in quotes*", ctx=ctx)
+            embed.add_field(name="Old Value", value=str(old_value), inline=False)
+            embed.add_field(name="New Value", value=str(input))
+            await ctx.send(embed=embed)
+            return oap.log(text="Changed the hall message format", cog="Settings", color="yellow", ctx=ctx)
 
         # ==================================================
         # If they didnt input a setting to change
         # Just give them current settings
         # ==================================================
         if setting == "":
-            embed = oap.makeEmbed(title=f"Current Hall of {which.title()} Settings", description=f"*Any of these can be changed*")
-
-            # ==================================================
-            # If the server data exists
-            # Use it
-            # ==================================================
-            if server_data.get("halls"):
-                embed.add_field(name="Emoji", value=server_data.get("halls").get(which).get("emoji"))
-                embed.add_field(name="Requirement", value=server_data.get("halls").get(which).get("requirement"))
-                embed.add_field(name="Channel", value=server_data.get("halls").get(which).get("channel"))
-                embed.add_field(name="Message", value=server_data.get("halls").get(which).get("message"))
-
-                # ==================================================
-                # Send output
-                # Log to console
-                # ==================================================
-                await ctx.send(embed=embed)
-                return oap.log(text=f"Got hall of {which} settings", cog="Settings", color="yellow", ctx=ctx)
-
-            # ==================================================
-            # If the server data doesnt exist
-            # Give defaults
-            # ==================================================
-            embed.add_field(name="Emoji", value="⬆️" if which == "fame" else "⬇️")
-            embed.add_field(name="Requirement", value="4")
-            embed.add_field(name="Channel", value="None")
-            embed.add_field(name="Message", value=f"[user] was sent to the hall of {which}!")
+            embed = oap.makeEmbed(title=f"Current Hall of {which.title()} Settings", description=f"*Any of these can be changed*", ctx=ctx)
+            embed.add_field(name="Emoji", value=server_data.get("halls").get(which).get("emoji"))
+            embed.add_field(name="Requirement", value=server_data.get("halls").get(which).get("requirement"))
+            embed.add_field(name="Channel", value=server_data.get("halls").get(which).get("channel"))
+            embed.add_field(name="Message", value=server_data.get("halls").get(which).get("message"))
+            embed.add_field(name="Removal Message", value=server_data.get("halls").get(which).get("removal_message"))
 
             # ==================================================
             # Send output
@@ -353,17 +363,14 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # If they *did* give a setting to change
         # Check if it's a valid setting
         # ==================================================
-        if setting not in ["emoji", "requirement", "channel", "message"]:
+        if setting not in ["emoji", "requirement", "channel", "message", "removal_message"]:
             embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid setting to change", ctx=ctx)
-            embed.add_field(name="Valid Settings", value="- emoji\n- requirement\n- channel\n- message", inline=False)
+            embed.add_field(name="Valid Settings", value="- emoji\n- requirement\n- channel\n- message\n- removal_message", inline=False)
             return await ctx.send(embed=embed)
 
         # ==================================================
         # Check if the value they gave is valid
         # ==================================================
-        if not server_data.get("halls"):
-            server_data["halls"] = default
-
         if setting == "emoji":
             if input == "reset":
                 input = "⬆️" if which == "fame" else "⬇️"
@@ -375,8 +382,8 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             if input == "reset":
                 input = 4
             try:
-                temp = int(input)
-                if temp < 1:
+                input = int(input)
+                if input < 1:
                     embed = oap.makeEmbed(title="Whoops!", description="Please enter a positive, nonzero integer", ctx=ctx)
                     return await ctx.send(embed=embed)
             except:
@@ -393,6 +400,10 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         if setting == "message":
             if input == "reset":
                 input = f"[user] was sent to the hall of {which}!"
+
+        if setting == "removal_message":
+            if input == "reset":
+                input = f"[user] was removed from the hall of {which}!"
 
         old_value = server_data["halls"][which][setting]
         server_data["halls"][which][setting] = None if input == "None" else input
