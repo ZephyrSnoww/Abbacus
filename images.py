@@ -189,7 +189,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         font3 = ImageFont.truetype("fonts/Helvetica.ttf", 18)
         temp_output = Image.new("RGB", (600, 80), (54, 57, 62))
         draw = ImageDraw.Draw(temp_output)
-        output = Image.new("RGB", (600 if len(draw.textsize("This is the default test message" if message == "" else message, font=font2) + 30 + 64) > 600 else len(draw.textsize("This is the default test message" if message == "" else message, font=font2) + 30 + 64), 80), (54, 57, 62))
+        output = Image.new("RGB", (600 if (draw.textsize("This is the default test message" if message == "" else message, font=font2)[0] + 30 + 64) < 600 else (draw.textsize("This is the default test message" if message == "" else message, font=font2)[0] + 30 + 64), 80), (54, 57, 62))
         output.paste(user_avatar, (10, 10))
         draw = ImageDraw.Draw(output)
         draw.text((89, 10), user_name, user_color, font=font1)
