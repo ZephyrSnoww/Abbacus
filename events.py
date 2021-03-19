@@ -106,7 +106,7 @@ class Events(commands.Cog):
         # Add the message to the servers list of messages
         # Announce and send in both channels
         # ==================================================
-        if score >= requirement:
+        if abs(score) >= requirement:
             if not server_data.get("sent_hall_messages"):
                 server_data["sent_hall_messages"] = []
             
@@ -118,6 +118,7 @@ class Events(commands.Cog):
             for i in range(len(server_data["sent_hall_messages"])):
                 if server_data["sent_hall_messages"][i]["id"] == message.id:
                     server_data["sent_hall_messages"][i]["score"] = score
+                    oap.setJson(f"servers/{guild.id}", server_data)
                     in_hall = True
                 
             if score == requirement:
@@ -188,6 +189,7 @@ class Events(commands.Cog):
                         output = re.sub(r"\[channel\]", f"{str(channel)}", output)
 
                         server_data["sent_hall_messages"].remove(sent_message)
+                        oap.setJson(f"servers/{guild.id}", server_data)
                         await message.channel.send(output)
                         await hall_message.delete()
                         return oap.log(text=f"A message got removed from the hall of {hall}", cog="Events", color="magenta")
