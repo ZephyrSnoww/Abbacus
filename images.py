@@ -107,7 +107,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Alter command
     # ==================================================
-    @commands.command(brief="See what youd like like if you were a little different", usage="[pfp, name, or color] [name or color hex] <message>", help="")
+    @commands.command(brief="See what youd look like if you were a little different", usage="[pfp, name, or color] [name or color hex] <message>", help="")
     async def alter(self, ctx, what="", to="", *, message=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -363,7 +363,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Broken Caption command
     # ==================================================
-    @commands.command(brief="Caption an image. a lot", usage="tops=[\"string 1\", \"string 2\", \"string 3\"] bottoms=[\"string 1\", \"string 2\", \"string 3\"]", help="")
+    @commands.command(brief="Caption an image. a lot", usage="tops=[string 1, string 2, string 3] bottoms=[string 1, string 2, string 3]", help="")
     async def broken_caption(self, ctx, *, text=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
