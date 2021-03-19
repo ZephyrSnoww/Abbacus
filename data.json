@@ -3,6 +3,7 @@
         "general",
         "images",
         "settings",
-        "dnd"
+        "dnd",
+        "events"
     ]
 }
