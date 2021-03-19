@@ -130,7 +130,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-images/
 users/
 images/captioned.png
 images/destroyed.jpg
@@ -138,4 +137,3 @@ images/colors/test.png
 characters/
 fonts/Helvetica-Bold.ttf
 fonts/Helvetica.ttf
-servers/
