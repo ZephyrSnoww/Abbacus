@@ -210,6 +210,46 @@ class Events(commands.Cog):
         await self.reaction_event(payload)
 
 
+    # ==================================================
+    # On message event
+    # ==================================================
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        # ==================================================
+        # Get server data
+        # If they have autoresponders enabled
+        # ==================================================
+        server_data = oap.getJson(f"servers/{message.guild.id}")
+        if server_data.get("autoresponder") == True:
+            if server_data.get("autoresponders"):
+                # ==================================================
+                # Go through all existing autoresponders
+                # Check the type, look for a match
+                # Respond if any match
+                # ==================================================
+                for autoresponder in server_data["autoresponders"]:
+                    respond = False
+                    if autoresponder["type"] == "word":
+                        if re.match(rf"\b{autoresponder['trigger']}\b", message.content):
+                            respond = True
+
+                    if autoresponder["type"] == "anywhere":
+                        if re.match(rf"{autoresponder['trigger']}", message.content):
+                            respond = True
+
+                    if autoresponder["type"] == "beginning":
+                        if re.match(rf"^{autoresponder['trigger']}", message.content):
+                            respond = True
+                        
+                    if autoresponder["type"] == "end":
+                        if re.match(rf"{autoresponder['trigger']}(?=$)", message.content):
+                            respond = True
+
+                    if respond:
+                        await message.channel.send(autoresponder["response"])
+                        oap.log(text="Autoresponder triggered", cog="Events", color="magenta", ctx=message)
+
+
 # ==================================================
 # Cog setup
 # ==================================================

@@ -21,7 +21,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Toggle delete invocation command 
     # ==================================================
-    @commands.command(brief="Toggle whether or not to delete invocation messages", help="By default, Abacus doesn't delete invocation messages (the message with the command in it). If this is on, Abacus will delete those messages.")
+    @commands.command(brief="Toggle whether or not to delete invocation messages", help="__**Required Permissions**__\n- Manage Server\n\nBy default, Abacus doesn't delete invocation messages (the message with the command in it). If this is on, Abacus will delete those messages.\n\n__**Examples**__\n`>>toggle_delete_invocation`")
     @commands.has_permissions(manage_guild=True)
     async def toggle_delete_invocation(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -52,7 +52,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Poll settings command
     # ==================================================
-    @commands.command(brief="Change default settings for the poll command", usage="[category] [setting]", help="")
+    @commands.command(brief="Change default settings for the poll command", usage="[category] [setting]", help="__**Required Permissions**__\n- Manage Server\n\nChange the default settings for polls on this server.\n\n__**Examples**__\n`>>poll_settings emoji yes :thumbsup:`\n`>>poll_settings emoji no reset`\n`>>poll_settings emoji all reset`")
     @commands.has_permissions(manage_guild=True)
     async def poll_settings(self, ctx, category="", *, value=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -191,7 +191,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # User settings command
     # ==================================================
-    @commands.command(brief="Change your user settings", usage="[category] [value]", help="")
+    @commands.command(brief="Change your user settings", usage="[category] [value]", help="Change your user-specific settings.\n\n__**Examples**__\n`>>user_settings color`\n`>>user_settings color 2083ff`\n`>>user_settings color reset`")
     async def user_settings(self, ctx, category="", *, input=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         user_data = oap.getJson(f"users/{ctx.author.id}")
@@ -276,7 +276,8 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Hall of fame and shame config
     # ==================================================
-    @commands.command(brief="Change hall of fame and shame settings", usage="[fame, shame, or message] [setting] [value]", help="")
+
+    @commands.command(brief="Change hall of fame and shame settings", usage="[fame, shame, or message] [setting] [value]", help="__**Required Permissions**__\n- Manage Server\n\nChange the settings for hall of fame and hall of shame.\n\n__**What?**__\n- The hall of fame and hall of shame are places where messages will get sent, if given a specific amount of reactions.\n- By default, if a message gets four ⬆️ reactions, it will be sent in a designated hall of fame channel (if there is one), and the opposite for ⬇️.\n\n__**Emoji**__\n- Change the emoji that users must react with.\n`>>hall_settings fame emoji :thumbsup:`\n`>>hall_settings shame emoji reset`\n\n__**Requirement**__\n- Change the amount of each reaction required for the message to be sent in a channel.\n`>>hall_settings fame requirement 12`\n`>>hall_settings shame requirement reset`\n\n__**Channel**__\n- Change which channel the bot should send messages in when they get enough reactions.\n`>>hall_settings fame channel #hall-of-fame`\n`>>hall_settings shame channel reset`\n\n__**Announcement Messages**__\n- Change what message the bot will send when a user gets enough reactions.\n`>>hall_settings fame message [user] is super cool!`\n`>>hall_settings fame removal_message [user] is no longer cool`\n`>>hall_settings shame message [user] is totally lame :/`\n`>>hall_settings shame removal_message reset`\n\n__**Message**__\n- Change the message that gets sent in the hall of fame or shame.\n`>>hall_settings message \"[[channel]] **[user]**: [message]\n([attachments])\"`\n`>>hall_settings message reset`")
     @commands.has_permissions(manage_guild=True)
     async def hall_settings(self, ctx, which="", setting="", *, input=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
@@ -325,7 +326,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         if which == "message":
             if setting == "":
-                embed = oap.makeEmbed(title="Whoops!", description="If you wish to change this, enter a message, surrouned by quotes\nYou can use discords formatting, and variables such as [user], [attachments], or [channel]", ctx=ctx)
+                embed = oap.makeEmbed(title="Whoops!", description="If you wish to change this, enter a message, surrouned by quotes\nYou can use discords formatting, and variables such as [user], [message], [attachments], or [channel]", ctx=ctx)
                 embed.add_field(name="Current Message", value=server_data["halls"]["message"], inline=False)
                 return await ctx.send(embed=embed)
             if not server_data.get("halls"):
@@ -419,6 +420,56 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         embed.add_field(name="New Value", value=str(input))
         await ctx.send(embed=embed)
         oap.log(text="Changed a hall setting", cog="Settings", color="yellow", ctx=ctx)
+
+    # ==================================================
+    # Autoresponders settings
+    # ==================================================
+    @commands.command(brief="Change autoresponder settings", help="__**Required Permissions**__\n- Manage Server\n\nAdd, remove, and edit autoresponders for this server.\n\n__**Examples**__\n`>>autoresponders toggle`\n`>>autoresponders add word/anywhere/beginning/end bro bro!!`")
+    async def autoresponders(self, ctx, which="", num="", trigger="", response=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+
+        # >>autoresponders add/remove/edit/list  trigger/number trigger/response trigger/response
+    
+        # ==================================================
+        # Argument checking
+        # ==================================================
+        if which == "toggle":
+            if not server_data.get("autoresponder"):
+                server_data["autoresponder"] = False
+
+            server_data["autoresponder"] = False if server_data["autoresponder"] else True
+
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+
+            embed = oap.makeEmbed(title="Success!", description=f"Autoresponders have been toggled for this server")
+            await ctx.send(embed=embed)
+            return oap.log(text="Toggled autoresponders", cog="Settings", color="yellow", ctx=ctx)
+
+        if which == "add":
+            if not server_data.get("autoresponders"):
+                server_data["autoresponders"] = []
+
+            server_data["autoresponders"].append({
+                "type": num,
+                "trigger": trigger,
+                "response": response
+            })
+
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+
+            embed = oap.makeEmbed(title="Success!", description=f"Autoresponder added\n\n**Trigger:** {trigger}\n**Response:** {response}")
+            await ctx.send(embed=embed)
+            return oap.log(text="Added an autoresponder", cog="Settings", color="yellow", ctx=ctx)
+    
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================
+        # embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
+        # await ctx.send(embed=embed)
+        # oap.log(text="PLACEHOLDER", cog="PLACEHOLDER", color="PLACEHOLDER", ctx=ctx)
 
 
 # ==================================================
