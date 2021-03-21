@@ -24,6 +24,8 @@ abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960, help_com
 data = oap.getJson("data")
 cogs = data["cogs"]
 
+abacus.remove_command("help")
+
 for extension in cogs:
     abacus.load_extension(extension)
     oap.log(text=f"{extension.title()} loaded")
