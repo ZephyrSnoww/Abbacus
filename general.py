@@ -31,7 +31,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Roll command
     # ==================================================
-    @commands.command(brief="Roll a die (1d20 by default)", usage="[die=1d20] [individual_mod=False] [remove=None]", help="Dice rolling, D&D style.\n1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides. You can add +[number] to the end to add a modifier (e.g. 2d6+4)\n\nBy default, the modifier is added to the total of all rolls. Use individual_mod=True to apply it to each roll individually.\n\nCross out a number of lowest or highest values, using remove=highest or remove=3lowest.\n\nIf you've imported characters with >>import_character, you can roll character-specific die (e.g. \">>roll Brooklynn cha\" or \">>roll Brooklynn per\")\nDo >>list_skills to list all available skills you can roll.\nWhen using this, add \"adv\" or \"dis\" to roll with advantage or disadvantage, and \"save\" to roll a saving throw.")
+    @commands.command(brief="Roll a die (1d20 by default)", usage="[die]", help="__**Dice rolling, D&D style**__\n- 1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides.\n`>>roll 1d20`\n\n__**Modifiers**__\n- You can add +[number] to the end to add a modifier.\n`>>roll 1d20+4`\n\n__**Individually Adding Modifiers**__\n- By default, the modifier is added to the total of all rolls.\n- Use individual_mod=True to apply it to each roll individually.\n`>>roll 4d20+4 individual_mod=True`\n\n__**Removing High or Low Rolls**__\n- Cross out a number of lowest or highest values, using remove=highest or remove=3lowest.\n`>>roll 5d20 remove=2lowest`\n\n__**Rolling Using Characters**__\n- If you've imported characters with >>import_character, you can roll character-specific die.\n- Do `>>list_skills` to list all available skills you can roll.\n- When using this, add \"adv\" or \"dis\" to roll with advantage or disadvantage\n- When using this, add \"save\" to roll a saving throw.\n`>>roll Brooklyn acr`\n`>>roll Avi ste adv`\n`>>roll Itova dec save`\n`>>roll Acdern ins save adv`")
     async def roll(self, ctx, die="1d20", *, args=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -230,7 +230,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Choose command
     # ==================================================
-    @commands.command(brief="Choose between several comma-seperated values", usage="[option one, option two[, option three[, option four]]]", help="Can't decide on something? I'll do it for you!")
+    @commands.command(brief="Choose between comma-seperated values", usage="[option one, option two[, option three]]", help="I'll choose between any options you supply. Each option must be separated by a command and a space.\n\n__**Examples**__\n`>>choose option one, option two, option three`")
     async def choose(self, ctx, *, choices=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -256,7 +256,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Flip command
     # ==================================================
-    @commands.command(brief="Flip a coin", help="Flip as many coins as you like!")
+    @commands.command(brief="Flip a coin", help="Flip as many coins as you like! Input an amount of coins to change how many to flip.\n\n__**Examples**__\n`>>flip`\n`>>flip 50`")
     async def flip(self, ctx, amount=1):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -280,7 +280,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Whois command
     # ==================================================
-    @commands.command(brief="Get info on a user", usage="[ping]", help="Get an in-depth rundown of a user")
+    @commands.command(brief="Get info on a user", usage="[ping]", help="Get an in-depth rundown of a user by pinging them with this command.\n\n__**Examples**__\n`>>whios @toaster`")
     async def whois(self, ctx, user: discord.Member = ""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -302,7 +302,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Poll command
     # ==================================================
-    @commands.command(brief="Start a vote on anything you like", usage="[info]", help="Custom emoji can be used - any emoji in the message will be added as a reaction.\nUnfortunately, I can only use emoji that are from the server i'm in.")
+    @commands.command(brief="Start a vote on anything you like", usage="[info]", help="Create a poll! Custom emoji can be used - any emoji in the message will be added as a reaction.\nUnfortunately, I can only use emoji that are from the server I'm in.\n\n__**Examples**__\n>>poll Should I buy a donut?\n>>poll :green_heart: :purple_heart:\n>>poll What should we do?\n:movie_camera: watch a movie\n:video_game: play a video game\n:chess_pawn: play a board game")
     async def poll(self, ctx, *, input=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("poll"):
@@ -369,7 +369,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Time until command
     # ==================================================
-    @commands.command(brief="", usage="", help="", aliases=["t-minus"])
+    @commands.command(brief="Get the time until some given time", usage="[time]", help="I'll calculate the time until a date in the future or past for you!\nTimes are formatted as hour:minute:second, and dates are formatted as day/month/year.\n\n__**Examples**__\n`>>time_until 14:30`\n`>>time_until 04/04/2073`", aliases=["t-minus"])
     async def time_until(self, ctx, date=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -526,7 +526,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Math
     # ==================================================
-    @commands.command(brief="", usage="", help="")
+    @commands.command(brief="Calculate some math", usage="[math]", help="I can do math for you!\nIf you want to use exponents, such as 2^2, you must do 2\*\*2.\n\n__**Examples**__\n`>>math 2+2`\n`>>math 7-3`\n`>>math 15/3`\n`>>math 12**12`")
     async def math(self, ctx, *, input=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -546,13 +546,82 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Invite
     # ==================================================
-    @commands.command(brief="", usage="", help="")
+    @commands.command(brief="Get my invite link", usage="", help="Want to add me to your server? This makes it easy for you!\n\n__**Examples**__\n`>>invite`")
     async def invite(self, ctx):
         await oap.tryDelete(ctx)
     
         embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=43072&scope=bot", ctx=ctx)
         await ctx.send(embed=embed)
-        oap.log(text="Got an invite link", cog="general", color="cyan", ctx=ctx)
+        oap.log(text="Got an invite link", cog="General", color="cyan", ctx=ctx)
+
+
+    # ==================================================
+    # Help Test
+    # ==================================================
+    @commands.command(brief="", usage="", help="", hidden=True)
+    async def help(self, ctx, _in=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # If they want general help
+        # Make a base embed
+        # ==================================================
+        if _in == "": 
+            embed = oap.makeEmbed(title="Here Are My Cogs and Commands", description="`>>help [command]` for more detailed information.", ctx=ctx)
+            
+            # ==================================================
+            # Add each cog as a field
+            # List each command in the cog's field
+            # ==================================================
+            for cog in self.abacus.cogs:
+                if cog not in ["Events"]:
+                    cog_commands = self.abacus.cogs[cog].walk_commands()
+                    valid_commands = list(filter(lambda c: (c.enabled == True and c.hidden == False), cog_commands))
+                    embed.add_field(name=f"__**{cog}**__", value=("\n".join([f"**>>{command.name}** - {command.short_doc}" for command in valid_commands])), inline=False)
+
+            # ==================================================
+            # Send the message
+            # Log to console
+            # ==================================================
+            await ctx.send(embed=embed)
+            return oap.log(text="Got general help (test)", cog="General", color="cyan", ctx=ctx)
+
+        # ==================================================
+        # If they entered something
+        # If it's a cog
+        # ==================================================
+        # if _in in self.abacus.cogs:
+        #     cog = self.abacus.cogs[_in]
+        #     embed = oap.makeEmbed(title=f"The {_in} Cog", description=f"*{cog.description}*", ctx=ctx)
+
+        #     valid_commands = list(filter(lambda c: (c.enabled == True and c.hidden == False), cog.walk_commands()))
+        #     embed.add_field(name=f"__**Commands**__", value=("\n".join([f"**>>{command.name}** {command.usage} - *{command.short_doc}*" for command in valid_commands])))
+
+        #     await ctx.send(embed=embed)
+        #     return oap.log(text=f"Got help for the {_in} cog", cog="General", color="cyan", ctx=ctx)
+
+        # ==================================================
+        # If they entered something
+        # If it's a command
+        # ==================================================
+        if _in in [command.name for command in self.abacus.commands]:
+            command = self.abacus.get_command(_in)
+            embed = oap.makeEmbed(title=f"The {command.name} Command", description=f"{command.help}", ctx=ctx)
+            # if command.usage:
+            #     embed.add_field(name="__**Basic Usage**__", value=f"**>>{command.name}** {command.usage}", inline=False)
+
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Got help for the {command.name} command", cog="General", color="cyan", ctx=ctx)
+    
+        # ==================================================
+        # Send output
+        # Log to console
+        # ==================================================
+        embed = oap.makeEmbed(title="Whoops!", description="I couldnt find a command with that name", ctx=ctx)
+        await ctx.send(embed=embed)
+        oap.log(text="Tried to get help for a command that doesnt exist", cog="General", color="cyan", ctx=ctx)
 
 
 # ==================================================
