@@ -236,7 +236,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Rolling stats
     # ==================================================
-    @commands.command(brief="", usage="", help="", aliases=["rs"])
+    @commands.command(brief="Roll standard D&D 5E stats", usage="<wanted stats, most to least>", help="I can roll character stats for you!\n\n__**Random Assignment**__\n- By default, I'll just give you a list of numbers.\n- If you want them randomly assigned, just use \"random\"\n`>>roll_stats random`\n\n__**Ordered Assignment**__\n- If you want me to assign the stats in an order you want, list what you want, from highest to lowest.\n- You don't have to input all stats!\n- I'll randomly assign the ones you don't tell me.\n`>>roll_stats int, con, cha`\n`>>rs str, con, int, dex, cha, wis`", aliases=["rs"])
     async def roll_stats(self, ctx, *, _in=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -321,7 +321,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # List skills
     # ==================================================
-    @commands.command(brief="", usage="", help="")
+    @commands.command(brief="Get a list of all valid skills for >>roll", usage="", help="This just gives you a list of the abbreviated stats you can use with ``>>roll`.\n\n__**Examples**__\n`>>list_skills`")
     async def list_skills(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -339,7 +339,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Import a character
     # ==================================================
-    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".", aliases=["import_char", "ic"])
+    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file to the message you send.\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".\n\n__**Examples**__\n`>>import_character`\n`>>import_char`\n`>>ic`", aliases=["import_char", "ic"])
     async def import_character(self, ctx, name=""):    
         # ==================================================
         # Check for an input name
@@ -378,7 +378,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # List characters
     # ==================================================
-    @commands.command(brief="List all characters you have imported", usage="", help="", aliases=["chars", "chs"])
+    @commands.command(brief="List all characters you have imported", usage="", help="I'll give you a list of all characters you've given me.\n\n__**Examples**__\n`>>characters`\n`>>chars`\n`>>chs`", aliases=["chars", "chs"])
     async def characters(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -403,7 +403,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Character information
     # ==================================================
-    @commands.command(brief="", usage="", help="", aliases=["char", "ch"])
+    @commands.command(brief="Get informaiton on a character you've imported", usage="", help="I'll give you information on a character you've imported.\n\n__**Examples**__\n`>>character Brooklyn`\n`>>char Avi`\n`>>ch Itova`", aliases=["char", "ch"])
     async def character(self, ctx, character="", specific_info=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -475,10 +475,10 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # Start formatting the embed
         # ==================================================
         else:
-            movement = [((f"**{key}:** {value} ft.") if value and (key != "units") else "") for key, value in attributes["movement"].items()]
+            movement = [((f"\n**{key}:** {value} ft.") if value and (key != "units") else "") for key, value in attributes["movement"].items()]
             movement = "\n".join(list(filter(lambda value: value != "", movement)))
 
-            senses = [((f"**{key}:** {value} ft.") if value and (key != "units") not in [0, ""] else "") for key, value in attributes["senses"].items()]
+            senses = [((f"\n**{key}:** {value} ft.") if value and (key != "units") not in [0, ""] else "") for key, value in attributes["senses"].items()]
             senses = "\n".join(list(filter(lambda value: value != "", senses)))
 
             embed = oap.makeEmbed(title=character.get('name'), description=f"""*Level {character_level} {details["race"]} {character_class}{f" ({character_subclass})" if character_subclass else ""}*
@@ -487,9 +487,9 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         **HP:** {attributes['hp']['value']}/{attributes['hp']['max']}
         **Initiative:** {attributes['init']['value']} (+{attributes['init']['bonus']} bonus)
 
-        **Movement:**{movement}
+        __**Movement:**__ {movement}
 
-        {f"**Senses:**{senses}" if len(senses) > 1 else ""}
+        {f"__**Senses:**__ {senses}" if len(senses) > 1 else ""}
         """, ctx=ctx)
 
         # ==================================================

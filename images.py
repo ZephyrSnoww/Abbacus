@@ -25,7 +25,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Testcolor command
     # ==================================================
-    @commands.command(brief="Test a color by hexadecimal value", help="", usage="[color] [True/False for transparency]")
+    @commands.command(brief="Test a color by hexadecimal value", help="I'll generate an image using the color you give me.\nI'll generate four shades, two lighter and two darker, as well.\n\n__**Transparency**__\nAdd \"True\" after the color to make the image transparent.\n\n__**Examples**__\n`>>testcolor 3a8ffe`\n`>>testcolor #ef2a2a`\n`>>testcolor 7aff10 True`", usage="[color] [True/False for transparency]")
     async def testcolor(self, ctx, color="", transparent=False):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -107,7 +107,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Alter command
     # ==================================================
-    @commands.command(brief="See what youd look like if you were a little different", usage="[pfp, name, or color] [name or color hex] <message>", help="")
+    @commands.command(brief="See what youd look like if you were a little different", usage="[pfp, name, or color] [name or color hex] <message>", help="See what you'd look like if you had a different profile picture, or role color!\nIf you want to change your profile picture, attach the image to your message.\nYou can change the message by adding at the end of the command.\n\n__**Examples**__\n`>>alter pfp`\n`>>alter name Joe`\n`>>alter color 3aff80`\n`>>alter none none hello`\n`>>alter name Joe whats up?`")
     async def alter(self, ctx, what="", to="", *, message=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -212,7 +212,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Pixelate command
     # ==================================================
-    @commands.command(brief="Pixelate an image", usage="[amount]", help="Pixelate an image with a specified amount.\nAmount ranges from 1-100")
+    @commands.command(brief="Pixelate an image", usage="[amount]", help="Pixelate an image with a specified amount.\nAmount ranges from 1-100.\nAttach the image to your message.\n\n__**Examples**__\n`>>pixelate`\n`>>pixelate 50`")
     async def pixelate(self, ctx, amount=20):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -256,7 +256,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Destroy command
     # ==================================================
-    @commands.command(brief="Add some jpeg compression", usage="[pixelation_amount] [compression_amount]", help="Add jpeg compression to an image, with a specified amount.\nPixelation amount ranges from 1-100\nCompression amount ranges from 1-10")
+    @commands.command(brief="Add some jpeg compression", usage="[pixelation_amount] [compression_amount]", help="Add jpeg compression and pixelation to an image, with a specified amount.\nPixelation amount ranges from 1-100.\nCompression amount ranges from 1-10.\n\n__**Examples**__\n`>>destroy`\n`>>destroy 50`\n`>>destroy 25 5`")
     async def destroy(self, ctx, pixelation_amount=10, compression_amount=1):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -305,7 +305,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Caption command
     # ==================================================
-    @commands.command(brief="Caption an image", usage="bottom=\"\" and/or top=\"\"", help="")
+    @commands.command(brief="Caption an image", usage="bottom=\"\" and/or top=\"\"", help="Caption an image with impact font!\nYou must attach the image you wish to caption to your message.\n\n__**Text**__\n- Use top=\"text\" for a top caption.\n- Use bottom=\"text\" for a bottom caption.\n\n__**Text Size**__\n- Change the text size with size=number.\n\n__**Examples**__\n`>>caption top=\"WHEN THE IMPOSTOR\" bottom=\"IS SUS\"`\n`>>caption top=\"AIGHT IM\" bottom=\"BOUTTA HEAD OUT\" size=8`")
     async def caption(self, ctx, *, text=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -363,7 +363,7 @@ class Images(commands.Cog, description="Color generation and image manipulation"
     # ==================================================
     # Broken Caption command
     # ==================================================
-    @commands.command(brief="Caption an image. a lot", usage="tops=[string 1, string 2, string 3] bottoms=[string 1, string 2, string 3]", help="")
+    @commands.command(brief="Caption an image. a lot", usage="tops=[string 1, string 2, string 3] bottoms=[string 1, string 2, string 3]", help="This command is essentially the same as `>>caption`, but it adds as many captions as you want, on top of each other.\nYou must attach the image you wish to caption to your message.\nUse tops=[text, text, text] for top text\nUse bottoms=[text, text, text] for bottom text.\n\n__**Examples**__\n`>>broken_caption tops=[hi, hello, :)]`\n`>>broken_caption tops=[oh my god, please be quiet, lksdlsdfklj] bottoms=[stop talking, i dont want to hear, ljksalkdjsfhl]`")
     async def broken_caption(self, ctx, *, text=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
