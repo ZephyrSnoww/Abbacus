@@ -424,52 +424,137 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Autoresponders settings
     # ==================================================
-    @commands.command(brief="Change autoresponder settings", help="__**Required Permissions**__\n- Manage Server\n\nAdd, remove, and edit autoresponders for this server.\n\n__**Examples**__\n`>>autoresponders toggle`\n`>>autoresponders add word/anywhere/beginning/end bro bro!!`")
+    @commands.command(brief="Change autoresponder settings", help="__**Required Permissions**__\n- Manage Server\n\nAdd, remove, and edit autoresponders for this server.\n\n__**Types**__\n- Autoresponders can have a type of \"word\", \"anywhere\", \"beginning\", or \"end\".\n- \"Word\" means it will only respond if the trigger is a word by itself (not contained within another word)\n- \"Anywhere\" will respond if the trigger is anywhere in the message.\n- \"Beginning\" and \"end\" will only respond if the trigger is at the beginning or end of the message.\n\n__**Examples**__\n`>>autoresponders toggle`\n`>>autoresponders list`\n`>>autoresponders add word bro bro!!`\n`>>autoresponders remove 1`\n`>>autoresponders edit 1 trigger dude`")
     async def autoresponders(self, ctx, which="", num="", trigger="", response=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
-
-        # >>autoresponders add/remove/edit/list  trigger/number trigger/response trigger/response
     
         # ==================================================
-        # Argument checking
+        # If they toggle autoresponders
+        # Get data
+        # If it doesnt exist, use defaults
         # ==================================================
         if which == "toggle":
             if not server_data.get("autoresponder"):
                 server_data["autoresponder"] = False
 
+            # ==================================================
+            # Flip the value
+            # ==================================================
             server_data["autoresponder"] = False if server_data["autoresponder"] else True
 
+            # ==================================================
+            # Write the data
+            # Send output
+            # Log to console
+            # ==================================================
             oap.setJson(f"servers/{ctx.guild.id}", server_data)
-
-            embed = oap.makeEmbed(title="Success!", description=f"Autoresponders have been toggled for this server")
+            embed = oap.makeEmbed(title="Success!", description=f"Autoresponders have been toggled {'on' if server_data['autoresponder'] else 'off'} for this server", ctx=ctx)
             await ctx.send(embed=embed)
             return oap.log(text="Toggled autoresponders", cog="Settings", color="yellow", ctx=ctx)
 
+        # ==================================================
+        # If they're adding an autoresponder
+        # Make an empty dict if the data doesnt exist yet
+        # ==================================================
         if which == "add":
             if not server_data.get("autoresponders"):
                 server_data["autoresponders"] = []
 
+            # ==================================================
+            # Check if they entered a valid type
+            # ==================================================
+            if num not in ["word", "anywhere", "beginning", "end"]:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid autoresponder type\nValid types are word, anywhere, beginning, or end")
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Add the autoresponder to the servers autoresponders
+            # ==================================================
             server_data["autoresponders"].append({
                 "type": num,
                 "trigger": trigger,
                 "response": response
             })
 
+            # ==================================================
+            # Write the data
+            # Send output
+            # Log to console
+            # ==================================================
             oap.setJson(f"servers/{ctx.guild.id}", server_data)
-
-            embed = oap.makeEmbed(title="Success!", description=f"Autoresponder added\n\n**Trigger:** {trigger}\n**Response:** {response}")
+            embed = oap.makeEmbed(title="Success!", description=f"Autoresponder added\n\n**Trigger:** {trigger}\n**Response:** {response}\n\n*If these dont look how you wanted them to, make sure you surrounded the trigger and response in quotation marks!*", ctx=ctx)
             await ctx.send(embed=embed)
             return oap.log(text="Added an autoresponder", cog="Settings", color="yellow", ctx=ctx)
-    
+
         # ==================================================
-        # Send output
-        # Log to console
+        # If they're removing an autoresponder
+        # Send an error if the server doesnt have any
         # ==================================================
-        # embed = oap.makeEmbed(title="PLACEHOLDER", description="PLACEHOLDER", ctx=ctx)
-        # await ctx.send(embed=embed)
-        # oap.log(text="PLACEHOLDER", cog="PLACEHOLDER", color="PLACEHOLDER", ctx=ctx)
+        if which == "remove":
+            if not server_data.get("autoresponders") or len(server_data.get("autoresponders")) == 0:
+                embed = oap.makeEmbed(title="Whoops!", description="This server doesn't have any autoresponders\nTry adding some with `>>autorespondsers add`", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Try to convert input to an int
+            # If it fails, send em an error
+            # ==================================================
+            try:
+                num = int(num)
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description="That wasn't a valid autoresponder ID\nValid IDs are numbers\nGet all autoresponders with `>>autoresponders list`", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if the server actually has as many autoresponders as specified
+            # ==================================================
+            if len(server_data["autoresponders"]) < num:
+                embed = oap.makeEmbed(title="Whoops!", description="That wasn't a valid autoresponder ID\nGet all autoresponders with `>>autoresponders list`", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Delete the given autoresponder
+            # ==================================================
+            deleted_auto = server_data["autoresponders"][num-1]
+            del server_data["autoresponders"][num-1]
+
+            # ==================================================
+            # Save data
+            # Send output
+            # Log to console
+            # ==================================================
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Autoresponder removed\n\n**Trigger:** {deleted_auto['trigger']}\n**Response:** {deleted_auto['response']}", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text="Removed an autoresponder", cog="Settings", color="yellow", ctx=ctx)
+
+        # ==================================================
+        # If they're listing autoresponders
+        # Send error if the server doesnt have any
+        # ==================================================
+        if which == "list":
+            if not server_data.get("autoresponders") or len(server_data.get("autoresponders")) == 0:
+                embed = oap.makeEmbed(title="Whoops!", description="This server doesn't have any autoresponders\nTry adding some with `>>autorespondsers add`", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Add each autoresponder's number and trigger to a string
+            # ==================================================
+            embed_description = "```"
+            for i in range(len(server_data["autoresponders"])):
+                autoresponder = server_data["autoresponders"][i]
+                embed_description += (f"{i+1} - {autoresponder['trigger']}\n")
+            embed_description += "```"
+
+            # ==================================================
+            # Send embed with said string as description
+            # Log to console
+            # ==================================================
+            embed = oap.makeEmbed(title=f"All Autoresponders for {ctx.guild.name}", description=embed_description, ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text="Got all autoresponders", cog="Settings", color="yellow", ctx=ctx)
 
 
 # ==================================================
