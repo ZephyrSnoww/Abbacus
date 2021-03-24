@@ -137,7 +137,7 @@ class Events(commands.Cog):
                 hall_channel = await self.abacus.fetch_channel(int(server_data["halls"][hall]["channel"][2:-1]))
                 output = server_data["halls"][hall]["message"]
                 output = re.sub(r"\[user\]", f"{message.author.name}", output)
-                output = re.sub(r"\[attachments\]", "\n".join([attachment.url for attachment in message.attachments]), output)
+                output = re.sub(r"\[attachments\]", "\n".join([(f"|| {attachment.url} ||" if "SPOILER_" in attachment.url else attachment.url) for attachment in message.attachments]), output)
                 output = re.sub(r"\[channel\]", f"{str(channel)}", output)
 
                 # ==================================================
@@ -145,7 +145,7 @@ class Events(commands.Cog):
                 # ==================================================
                 output2 = server_data["halls"]["message"]
                 output2 = re.sub(r"\[user\]", f"{message.author.name}", output2)
-                output2 = re.sub(r"\[attachments\]", "\n".join([attachment.url for attachment in message.attachments]), output2)
+                output2 = re.sub(r"\[attachments\]", "\n".join([(f"|| {attachment.url} ||" if "SPOILER_" in attachment.url else attachment.url) for attachment in message.attachments]), output2)
                 output2 = re.sub(r"\[channel\]", f"{str(channel)}", output2)
                 output2 = re.sub(r"\[message\]", f"{message.content}", output2)
                 # output = re.sub(r"", f"", output)
@@ -221,6 +221,7 @@ class Events(commands.Cog):
         # ==================================================
         server_data = oap.getJson(f"servers/{message.guild.id}")
         if server_data.get("autoresponder") == True:
+            if message.author.bot: return
             if server_data.get("autoresponders"):
                 # ==================================================
                 # Go through all existing autoresponders
