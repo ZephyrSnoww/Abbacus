@@ -173,7 +173,7 @@ class Events(commands.Cog):
         # If it is, remove it
         # Send output
         # ==================================================
-        if score < requirement:
+        if abs(score) < requirement:
             if server_data.get("sent_hall_messages"):
                 for sent_message in server_data["sent_hall_messages"]:
                     if sent_message["id"] == message.id:
