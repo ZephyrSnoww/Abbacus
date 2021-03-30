@@ -231,19 +231,19 @@ class Events(commands.Cog):
                 for autoresponder in server_data["autoresponders"]:
                     respond = False
                     if autoresponder["type"] == "word":
-                        if re.match(rf"\b{autoresponder['trigger']}\b", message.content):
+                        if len(re.findall(rf"\b{autoresponder['trigger'].lower()}\b", message.content.lower())) > 0:
                             respond = True
 
                     if autoresponder["type"] == "anywhere":
-                        if re.match(rf"{autoresponder['trigger']}", message.content):
+                        if len(re.findall(rf"{autoresponder['trigger'].lower()}", message.content.lower())) > 0:
                             respond = True
 
                     if autoresponder["type"] == "beginning":
-                        if re.match(rf"^{autoresponder['trigger']}", message.content):
+                        if len(re.findall(rf"^{autoresponder['trigger'].lower()}", message.content.lower())) > 0:
                             respond = True
                         
                     if autoresponder["type"] == "end":
-                        if re.match(rf"{autoresponder['trigger']}(?=$)", message.content):
+                        if len(re.findall(rf"{autoresponder['trigger'].lower()}(?=$)", message.content.lower())) > 0:
                             respond = True
 
                     if respond:
