@@ -550,7 +550,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     async def invite(self, ctx):
         await oap.tryDelete(ctx)
     
-        embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=43072&scope=bot", ctx=ctx)
+        embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=268561520&scope=bot", ctx=ctx)
         await ctx.send(embed=embed)
         oap.log(text="Got an invite link", cog="General", color="cyan", ctx=ctx)
 
