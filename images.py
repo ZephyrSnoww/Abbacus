@@ -55,7 +55,11 @@ class Images(commands.Cog, description="Color generation and image manipulation"
         # Load two sizes of font
         # ==================================================
         old_color = f"{color}"
-        color = oap.hexToRGB(color)
+        try:
+            color = oap.hexToRGB(color)
+        except:
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid hex value", ctx=ctx)
+            return await ctx.send(embed=embed)
         if not transparent:
             img = Image.new("RGB", (235, 115), color=color)
         else:
