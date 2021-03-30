@@ -556,20 +556,20 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
 
 
     # ==================================================
-    # Help Test
+    # Help command
     # ==================================================
     @commands.command(brief="", usage="", help="", hidden=True)
     async def help(self, ctx, _in=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
-    
+
         # ==================================================
         # If they want general help
         # Make a base embed
         # ==================================================
-        if _in == "": 
-            embed = oap.makeEmbed(title="Here Are My Cogs and Commands", description="`>>help [command]` for more detailed information.", ctx=ctx)
+        if _in == "all": 
+            embed = oap.makeEmbed(title="Here are all of my cogs and commands".title(), description="`>>help [command]` for more detailed information.", ctx=ctx)
             
             # ==================================================
             # Add each cog as a field
@@ -589,39 +589,68 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
             return oap.log(text="Got general help (test)", cog="General", color="cyan", ctx=ctx)
 
         # ==================================================
-        # If they entered something
-        # If it's a cog
-        # ==================================================
-        # if _in in self.abacus.cogs:
-        #     cog = self.abacus.cogs[_in]
-        #     embed = oap.makeEmbed(title=f"The {_in} Cog", description=f"*{cog.description}*", ctx=ctx)
-
-        #     valid_commands = list(filter(lambda c: (c.enabled == True and c.hidden == False), cog.walk_commands()))
-        #     embed.add_field(name=f"__**Commands**__", value=("\n".join([f"**>>{command.name}** {command.usage} - *{command.short_doc}*" for command in valid_commands])))
-
-        #     await ctx.send(embed=embed)
-        #     return oap.log(text=f"Got help for the {_in} cog", cog="General", color="cyan", ctx=ctx)
-
-        # ==================================================
-        # If they entered something
-        # If it's a command
+        # If they entered a command
         # ==================================================
         if _in in [command.name for command in self.abacus.commands]:
             command = self.abacus.get_command(_in)
             embed = oap.makeEmbed(title=f"The {command.name} Command", description=f"{command.help}", ctx=ctx)
-            # if command.usage:
-            #     embed.add_field(name="__**Basic Usage**__", value=f"**>>{command.name}** {command.usage}", inline=False)
 
             await ctx.send(embed=embed)
             return oap.log(text=f"Got help for the {command.name} command", cog="General", color="cyan", ctx=ctx)
-    
+
         # ==================================================
-        # Send output
-        # Log to console
+        # If they didnt enter anything
+        # Ask for a category
         # ==================================================
-        embed = oap.makeEmbed(title="Whoops!", description="I couldnt find a command with that name", ctx=ctx)
-        await ctx.send(embed=embed)
-        oap.log(text="Tried to get help for a command that doesnt exist", cog="General", color="cyan", ctx=ctx)
+        linebreak = "\n"
+        embed = oap.makeEmbed(title="Alright!", description=f"Send a message with the category you want help with.\n\n__**Valid Categories**__\n{linebreak.join([f'- {cog}' for cog in self.abacus.cogs])}", ctx=ctx)
+        cog_request_message = await ctx.send(embed=embed)
+
+        def check(message):
+            return message.author.id == ctx.author.id
+
+        wanted_cog_message = await self.abacus.wait_for("message", check=check)
+        wanted_cog = wanted_cog_message.content.lower()
+
+        # ==================================================
+        # If they didnt enter a valid cog
+        # Send an error
+        # ==================================================
+        if wanted_cog not in [cog.lower() for cog in self.abacus.cogs]:
+            embed = oap.makeEmbed(title="Whoops!", description="I couldn't find a cog with that name.\nTry the command again!", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # Get all comands from the cog
+        # ==================================================
+        cog = wanted_cog.title()
+        if cog == "Dnd": cog = "DND"
+        commands = self.abacus.cogs[cog].walk_commands()
+        valid_commands = list(filter(lambda c: (c.enabled == True and c.hidden == False), commands))
+
+        # ==================================================
+        # Send an embed with all commands in the cog
+        # Then listen for any input
+        # ==================================================
+        embed = oap.makeEmbed(title=f"The {cog} Cog", description=("*Follow this up with the name of a command, and I'll give you more detailed help!*\n\n" + "\n".join([f"**>>{command.name}** - {command.short_doc}" for command in valid_commands])), ctx=ctx)
+        command_list_message = await ctx.send(embed=embed)
+        wanted_command_message = await self.abacus.wait_for("message", check=check)
+        wanted_command = wanted_command_message.content.lower()
+
+        # ==================================================
+        # If they follow it up with a command name
+        # Give them detailed help on that command
+        # ==================================================
+        if wanted_command in [command.name for command in self.abacus.commands]:
+            command = self.abacus.get_command(wanted_command)
+            embed = oap.makeEmbed(title=f"The {command.name.title()} Command", description=f"{command.help}", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Got help for the {command.name} command", cog="General", color="cyan", ctx=ctx)
+
+        # ==================================================
+        # Otherwise just ignore it and log to console
+        # ==================================================
+        return oap.log(text=f"Got help for the {cog} cog", cog="General", color="cyan", ctx=ctx)
 
 
 # ==================================================
