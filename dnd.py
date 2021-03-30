@@ -339,7 +339,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Import a character
     # ==================================================
-    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file to the message you send.\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".\n\n__**Examples**__\n`>>import_character`\n`>>import_char`\n`>>ic`", aliases=["import_char", "ic"])
+    @commands.command(brief="Import a character from foundry", usage="[name]", help="Import a character from foundry by attaching the .json file to the message you send.\nExport a character from foundry by right clicking the actor and selecting \"Export Data\".\n\n__**Examples**__\n`>>import_character Dave`\n`>>import_char George`\n`>>ic Sophia`", aliases=["import_char", "ic"])
     async def import_character(self, ctx, name=""):    
         # ==================================================
         # Check for an input name
