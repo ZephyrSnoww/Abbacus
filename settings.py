@@ -63,7 +63,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # Arg checking
         # ==================================================
         if category == "":
-            embed = oap.makeEmbed(title="Please Enter a Category", description="Valid categories are:\n- emoji\n- timer\n- invocation", ctx=ctx)
+            embed = oap.makeEmbed(title="Please Enter a Category!", description="Valid categories are:\n- emoji\n- timer\n- invocation", ctx=ctx)
             return await ctx.send(embed=embed)
         
         if category not in ["emoji", "timer", "invocation"]:
@@ -224,7 +224,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                     embed = oap.makeEmbed(title="Here You Go!", description=f"Your color is {hex(user_data['color'])}", ctx=ctx)
                     return await ctx.send(embed=embed)
                 else:
-                    embed = oap.makeEmbed(title="Whoops!", description=f"You dont have a color yet\nSet one with >>user_settings color [hex codee]", ctx=ctx)
+                    embed = oap.makeEmbed(title="Whoops!", description=f"You dont have a color yet\nSet one with >>user_settings color [hex code]", ctx=ctx)
                     return await ctx.send(embed=embed)
 
             # ==================================================
@@ -276,7 +276,6 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Hall of fame and shame config
     # ==================================================
-
     @commands.command(brief="Change hall of fame and shame settings", usage="[fame, shame, or message] [setting] [value]", help="__**Required Permissions**__\n- Manage Server\n\nChange the settings for hall of fame and hall of shame.\n\n__**What?**__\n- The hall of fame and hall of shame are places where messages will get sent, if given a specific amount of reactions.\n- By default, if a message gets four ⬆️ reactions, it will be sent in a designated hall of fame channel (if there is one), and the opposite for ⬇️.\n\n__**Emoji**__\n- Change the emoji that users must react with.\n`>>hall_settings fame emoji :thumbsup:`\n`>>hall_settings shame emoji reset`\n\n__**Requirement**__\n- Change the amount of each reaction required for the message to be sent in a channel.\n`>>hall_settings fame requirement 12`\n`>>hall_settings shame requirement reset`\n\n__**Channel**__\n- Change which channel the bot should send messages in when they get enough reactions.\n`>>hall_settings fame channel #hall-of-fame`\n`>>hall_settings shame channel reset`\n\n__**Announcement Messages**__\n- Change what message the bot will send when a user gets enough reactions.\n`>>hall_settings fame message [user] is super cool!`\n`>>hall_settings fame removal_message [user] is no longer cool`\n`>>hall_settings shame message [user] is totally lame :/`\n`>>hall_settings shame removal_message reset`\n\n__**Message**__\n- Change the message that gets sent in the hall of fame or shame.\n`>>hall_settings message \"[[channel]] **[user]**: [message]\n([attachments])\"`\n`>>hall_settings message reset`")
     @commands.has_permissions(manage_guild=True)
     async def hall_settings(self, ctx, which="", setting="", *, input=""):
@@ -425,6 +424,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # Autoresponders settings
     # ==================================================
     @commands.command(brief="Change autoresponder settings", help="__**Required Permissions**__\n- Manage Server\n\nAdd, remove, and edit autoresponders for this server.\n\n__**Types**__\n- Autoresponders can have a type of \"word\", \"anywhere\", \"beginning\", or \"end\".\n- \"Word\" means it will only respond if the trigger is a word by itself (not contained within another word)\n- \"Anywhere\" will respond if the trigger is anywhere in the message.\n- \"Beginning\" and \"end\" will only respond if the trigger is at the beginning or end of the message.\n\n__**Examples**__\n`>>autoresponders toggle`\n`>>autoresponders list`\n`>>autoresponders add word bro bro!!`\n`>>autoresponders remove 1`\n`>>autoresponders edit 1 trigger dude`")
+    @commands.has_permissions(manage_guild=True)
     async def autoresponders(self, ctx, which="", num="", trigger="", response=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -555,6 +555,401 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             embed = oap.makeEmbed(title=f"All Autoresponders for {ctx.guild.name}", description=embed_description, ctx=ctx)
             await ctx.send(embed=embed)
             return oap.log(text="Got all autoresponders", cog="Settings", color="yellow", ctx=ctx)
+
+
+    # ==================================================
+    # Colored roles
+    # ==================================================
+    @commands.command(brief="Manage colored roles", help="__**Required Permissions**__\n**Toggle**: Manage Server\n**Change Required Role**: Manage Server\n**Create/Edit/Delete**: Variable\n\nToggle, create, edit, and delete custom colored roles. This lets people give themselves custom colors without giving them new permissions and without any hassle.\n\n__**Toggle**__\nToggle colored roles off or on for this server. By default, anyone can create, edit, and delete colored roles - but only ones theyve created.\n`>>colored_roles toggle`\n\n__**Permissions**__\nAnyone with the Manage Server permission can set who can use this command. This allows you to set a role, and any user that doesn't have that role won't be able to use this command.\n`>>colored_roles role @Colorful`\n`>>colored_roles role reset`\n\n__**Create**__\nCreate a role with a specific name and hex color. I'll automatically give you the role, and place it above your current role. You cannot name a role something that already exists.\n`>>colored_role create Blue 4060ff`\n`>>colored_role create Green 22ff67`\n\n__**Edit**__\nEdit a pre-existing role that you've created. If you have the Manage Server permission, you can edit any created role.\n`>>colored_role edit Blue name Red`\n`>>colored_role edit Red color e05020`\n\n__**Delete**__\nRemove a role that you've created. If you have the Manage Server permission, you can remove any created role.\n`>>colored_role remove Red`", aliases=["colored_role"])
+    async def colored_roles(self, ctx, _one="", _two="", _three="", _four=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # Argument checking
+        # ==================================================
+        if _one not in ["toggle", "create", "edit", "delete", "role"]:
+            embed = oap.makeEmbed(title="Whoops!", description="Please enter either toggle, create, edit, delete, or role", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        default = {
+            "enabled": False,
+            "required_role": None,
+            "roles": [
+                # {
+                #     "name": "Blue",
+                #     "id": 12937819284752313,
+                #     "creator": 98743218758769176
+                # }
+            ]
+        }
+
+        if not server_data.get("colored_roles"):
+            server_data["colored_roles"] = default
+
+        # ==================================================
+        # If they want to toggle colored roles
+        # ==================================================
+        if _one == "toggle":
+            # ==================================================
+            # Check if the user has the manage server permission
+            # ==================================================
+            if not ctx.author.guild_permissions.manage_guild:
+                embed = oap.makeEmbed(title="Whoops!", description="You don't have the required permissions to toggle colored roles\nOnly users with the Manage Server permission can do this", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Change the value in server_data
+            # Write the data to the servers file
+            # Send output
+            # Log to console
+            # ==================================================
+            server_data["colored_roles"]["enabled"] = False if server_data["colored_roles"]["enabled"] == True else True
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Colored roles have been {'enabled' if server_data['colored_roles']['enabled'] else 'disabled'} for this server", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Toggled role colors to {server_data['colored_roles']['enabled']}", cog="Settings", color="yellow", ctx=ctx)
+
+        # ==================================================
+        # If the server has colored roles disabled
+        # Send an error
+        # ==================================================
+        if not server_data["colored_roles"]["enabled"]:
+            embed = oap.makeEmbed(title="Whoops!", description="Colored roles aren't enabled on this server", ctx=ctx)
+            return await ctx.send(embed=embed)
+
+        # ==================================================
+        # Check if the user has the manage server permission
+        # ==================================================
+        manager = False
+        if ctx.author.guild_permissions.manage_guild:
+            manager = True
+        
+        # ==================================================
+        # If they want to change permissions
+        # ==================================================
+        if _one == "role":
+            # ==================================================
+            # Check if they input a role
+            # ==================================================
+            if _two == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a role by pinging the role", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if the user has the manage server permission
+            # ==================================================
+            if not manager:
+                embed = oap.makeEmbed(title="Whoops!", description="You don't have the required permissions to toggle colored roles\nOnly users with the Manage Server permission can do this", ctx=ctx)
+                return await ctx.send(embed=embed)
+           
+            # ==================================================
+            # Check if they want to reset the role
+            # ==================================================
+            if _two == "reset":
+                server_data["colored_roles"]["required_role"] = None
+                oap.setJson(f"servers/{ctx.guild.id}", server_data)
+                embed = oap.makeEmbed(title="Success!", description=f"A role is no longer required to make colored roles", ctx=ctx)
+                await ctx.send(embed=embed)
+                return oap.log(text=f"Removed the role requirement for colored roles", cog="Settings", color="yellow", ctx=ctx)
+
+            # ==================================================
+            # Get role id
+            # Try to get the role object by id
+            # ==================================================
+            role_id = _two[3:-1]
+            role = ctx.guild.get_role(int(role_id))
+
+            # ==================================================
+            # If the role doesnt exist
+            # Say so
+            # ==================================================
+            if role == None:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldn't find that role", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Set value
+            # Write data
+            # Send output
+            # Log to console
+            # ==================================================
+            server_data["colored_roles"]["required_role"] = int(role_id)
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Required role has been changed to {role.name}", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Changed required role for colored role creation to {role.name}", cog="Settings", color="yellow", ctx=ctx)
+
+        # ==================================================
+        # If the server has a required role set
+        # ==================================================
+        has_required_role = True
+        if server_data["colored_roles"]["required_role"]:
+            has_required_role = False
+
+            # ==================================================
+            # Go through all the users roles to see if they have it
+            # ==================================================
+            for role in ctx.author.roles:
+                if role.name == ctx.guild.get_role(server_data["colored_roles"]["required_role"]).name:
+                    has_required_role = True
+
+            # ==================================================
+            # If they have the manage server permission
+            # They can do it regardless
+            # ==================================================
+            if ctx.author.guild_permissions.manage_guild:
+                has_required_role = True
+        
+        # ==================================================
+        # Check if the role exists
+        # And if theyre the owner
+        # ==================================================
+        server_role_exists = False
+        server_role = None
+        role_exists = False
+        owns_role = False
+        role_index = None
+        for i in range(len(server_data["colored_roles"]["roles"])):
+            if server_data["colored_roles"]["roles"][i]["name"] == _two:
+                role_exists = True
+                role_index = i
+                server_role = ctx.guild.get_role(server_data["colored_roles"]["roles"][i]["id"])
+                if server_role != None:
+                    server_role_exists = True
+                if server_data["colored_roles"]["roles"][i]["creator"] == ctx.author.id:
+                    owns_role = True
+        if manager:
+            owns_role = True
+
+        # ==================================================
+        # If they want to create a role
+        # ==================================================
+        if _one == "create":
+            # ==================================================
+            # If they dont have a required role, send an error
+            # ==================================================
+            if not has_required_role:
+                    embed = oap.makeEmbed(title="Whoops!", description="You don't have the required role to create colored roles", ctx=ctx)
+                    return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if they provided name and color values
+            # ==================================================
+            if _two == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a role name and color", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            if _three == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a role color", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if they gave a valid color
+            # ==================================================
+            color = _three
+            if color.startswith("#"):
+                color = color[1:]
+            if len(color) != 6:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid color hex value", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            try:
+                color = oap.hexToRGB(color)
+                color = discord.Colour.from_rgb(color[0], color[1], color[2])
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid color hex value", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if a role with the given name already exists
+            # ==================================================
+            if server_role_exists:
+                embed = oap.makeEmbed(title="Whoops!", description="A role with that name already exists", ctx=ctx)
+                return await ctx.send(embed=embed)
+            
+            # ==================================================
+            # Create a role
+            # Move it above the persons top role
+            # Assign it to the person
+            # Throw an error if permissions fail me
+            # ==================================================
+            try:
+                where = "create the role"
+                role = await ctx.guild.create_role(name=_two, colour=color, reason=f"Colored role created by {ctx.author.name}")
+
+                for user_role in ctx.author.roles:
+                    if user_role.color.value != 0:
+                        top_user_role_position = user_role.position
+                position = top_user_role_position + 1
+
+                where = "give you the role"
+                await ctx.author.add_roles(role, reason=f"Colored role created by {ctx.author.name}")
+                where = "move the role up"
+                await role.edit(position=position, reason=f"Colored role created by {ctx.author.name}")
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description=f"I couldnt {where}\nMake sure I have the Manage Roles permission, and that I have a role above all other roles\n\n*(I know this is annoying, I wish it was different, but that's what discord requires)*", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            server_data["colored_roles"]["roles"].append({
+                "name": role.name,
+                "id": role.id,
+                "creator": ctx.author.id
+            })
+
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Created a new role, \"{role.name}\", with a color of {_three}", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text="Created a new colored role", cog="Settings", color="yellow", ctx=ctx)
+    
+        # ==================================================
+        # If they want to edit a role
+        # ==================================================
+        if _one == "edit":
+            # ==================================================
+            # If they dont have a require role, error
+            # ==================================================
+            if not has_required_role:
+                    embed = oap.makeEmbed(title="Whoops!", description="You don't have the required role to create colored roles", ctx=ctx)
+                    return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if they gave role, setting, and value values
+            # ==================================================
+            if _two == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a role to edit", ctx=ctx)
+                return await ctx.send(embed=embed)
+            
+            if _three == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter what you want to edit (name or color)", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            if _four == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter what you want the value to be", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if they gave valid arguments
+            # ==================================================
+            if _three not in ["name", "color"]:
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter either name or color as the value to edit", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            if _three == "color":
+                color = _four
+                if color.startswith("#"):
+                    color = color[1:]
+                if len(color) != 6:
+                    embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid color hex value", ctx=ctx)
+                    return await ctx.send(embed=embed)
+
+                try:
+                    color = oap.hexToRGB(color)
+                    color = discord.Colour.from_rgb(color[0], color[1], color[2])
+                except:
+                    embed = oap.makeEmbed(title="Whoops!", description="Please enter a valid color hex value", ctx=ctx)
+                    return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if the role they gave actually exists
+            # ==================================================
+            if not role_exists:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldn't find a colored role with that name", ctx=ctx)
+                return await ctx.send(embed=embed)
+            
+            # ==================================================
+            # If they dont own the role
+            # And dont have the manage server permission
+            # Give them an error
+            # ==================================================
+            if not owns_role:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldn't find any roles you own with that name")
+                return await ctx.send(embed=embed)
+            
+            # ==================================================
+            # Apply changes
+            # Throw an error if perms dont exist
+            # ==================================================
+            try:
+                # ==================================================
+                # Try to get the role by id
+                # Return an error if i cant
+                # ==================================================
+                role = ctx.guild.get_role(server_data["colored_roles"]["roles"][role_index]["id"])
+
+                if role == None:
+                    embed = oap.makeEmbed(title="Whoops!", description="I couldn't find that role\nDid it get deleted?", ctx=ctx)
+                    return ctx.send(embed=embed)
+
+                # ==================================================
+                # If theyre changing the name
+                # ==================================================
+                if _three == "name":
+                    await role.edit(name=_four, reason=f"Colored role edited by {ctx.author.name}")
+                    server_data["colored_roles"]["roles"][role_index]["name"] = _four
+                
+                # ==================================================
+                # If theyre changing the color
+                # ==================================================
+                if _three == "color":
+                    await role.edit(color=color, reason=f"Colored role edited by {ctx.author.name}")
+            
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description=f"I couldn't change the role {_three}\nMake sure I have the Manage Roles permission, and that I have a role above all other roles\n\n*(I know this is annoying, I wish it was different, but that's what discord requires)*", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            oap.setJson(f"servers/{ctx.author.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Changed {_two}'s {_three} to {_four}", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text="Created a new colored role", cog="Settings", color="yellow", ctx=ctx)
+        
+        # ==================================================
+        # If they want to remove a role
+        # ==================================================
+        if _one == "delete":
+            # ==================================================
+            # Check if they gave arguments
+            # ==================================================
+            if _two == "":
+                embed = oap.makeEmbed(title="Whoops!", description="Please enter a role for me to delete", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if the colored role exists
+            # ==================================================
+            if not role_exists:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldn't find a colored role with that name", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Check if they own the role
+            # ==================================================
+            if not owns_role:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldn't find a role that you own with that name", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Delete the role
+            # Remove the role from server data
+            # Say if i got an error from any of that
+            # ==================================================
+            try:
+                await server_role.delete(reason=f"{ctx.author.name} deleted a colored role")
+                del server_data["colored_roles"]["roles"][role_index]
+            except:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldnt delete the role\nMake sure I have the Manage Roles permission, and that I have a role above all other roles\n\n*(I know this is annoying, I wish it was different, but that's what discord requires)*", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            # ==================================================
+            # Write server data
+            # Send output
+            # Log to console
+            # ==================================================
+            oap.setJson(f"servers/{ctx.author.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"Deleted the colored role \"{_two}\"", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text="Created a new colored role", cog="Settings", color="yellow", ctx=ctx)
 
 
 # ==================================================
