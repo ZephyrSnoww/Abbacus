@@ -682,6 +682,19 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             return oap.log(text=f"Changed required role for colored role creation to {role.name}", cog="Settings", color="yellow", ctx=ctx)
 
         # ==================================================
+        # If they want to list colored roles
+        # ==================================================
+        if _one == "list":
+            owned_roles = []
+            for role in server_data["colored_roles"]["roles"]:
+                if role["creator"] == ctx.author.id or manager:
+                    owned_roles.append(f"<!@{role['id']}>{f' (<!{role["""id"""]}>)' if manager else ''}")
+
+            embed = oap.makeEmbed(title=f"All Roles Accessible by {ctx.author.mention}", description=("\n".join(owned_roles) if len(owned_roles) > 0 else "You don't own any roles!"), ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text="Listed accessible colored roles", cog="Settings", color="yellow", ctx=ctx)
+
+        # ==================================================
         # If the server has a required role set
         # ==================================================
         has_required_role = True
@@ -899,7 +912,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
                 embed = oap.makeEmbed(title="Whoops!", description=f"I couldn't change the role {_three}\nMake sure I have the Manage Roles permission, and that I have a role above all other roles\n\n*(I know this is annoying, I wish it was different, but that's what discord requires)*", ctx=ctx)
                 return await ctx.send(embed=embed)
 
-            oap.setJson(f"servers/{ctx.author.id}", server_data)
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
             embed = oap.makeEmbed(title="Success!", description=f"Changed {_two}'s {_three} to {_four}", ctx=ctx)
             await ctx.send(embed=embed)
             return oap.log(text="Created a new colored role", cog="Settings", color="yellow", ctx=ctx)
@@ -946,10 +959,116 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # Send output
             # Log to console
             # ==================================================
-            oap.setJson(f"servers/{ctx.author.id}", server_data)
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
             embed = oap.makeEmbed(title="Success!", description=f"Deleted the colored role \"{_two}\"", ctx=ctx)
             await ctx.send(embed=embed)
             return oap.log(text="Created a new colored role", cog="Settings", color="yellow", ctx=ctx)
+
+
+    # ==================================================
+    # Remade Server Settings
+    # ==================================================
+    @commands.command(brief="Change server-wide settings", help="i dunno lol ill write this later")
+    async def server_settings(self, ctx):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+
+        def id_check(message):
+            return message.author.id == ctx.author.id
+
+        # ==================================================
+        # Make a big embed with all server settings and values
+        # ==================================================
+        embed = oap.makeEmbed(title="Alright!", description=f"""\
+Here are the current settings for {ctx.guild.name}.
+
+**Delete Command Invocation:** {server_data.get("delete_invocation")}
+**Autoresponders:** {"Enabled" if server_data.get("autoresponder") == True else "Disabled"}
+
+__**Colored Roles ({("Enabled" if server_data["colored_roles"]["enabled"] else "Disabled") if server_data.get("colored_roles") else "Disabled"})**__
+**Required Role:** {(ctx.guild.get_role(server_data["colored_roles"]["required_role"]).mention if server_data["colored_roles"]["required_role"] else "None") if server_data.get("colored_roles") else "None"}
+
+__**Halls**__
+**Fame:** {("Enabled" if server_data["halls"]["fame"]["channel"] != None else "Disabled") if server_data.get("halls") else "Disabled"}
+**Shame:** {("Enabled" if server_data["halls"]["shame"]["channel"] != None else "Disabled") if server_data.get("halls") else "Disabled"}
+
+__**Valid Toggles**__
+- Invocation
+- Autoresponders
+- Colored roles
+
+__**Valid Categories**__
+- Autoresponders
+- Colored roles
+- Halls
+- Polls
+
+Respond to this message with a toggle and I'll toggle it for you!
+`toggle invocation`
+
+Respond to this message with a category and I'll give you more detailed information!
+`category autoresponders`
+
+*Otherwise, I'll ignore your message*
+""", ctx=ctx)
+        settings_message = await ctx.send(embed=embed)
+
+        # ==================================================
+        # Wait for the next message from the original author
+        # ==================================================
+        response_message = await self.abacus.wait_for("message", check=id_check)
+        response = response_message.content.lower()
+
+        # ==================================================
+        # If the message starts with toggle
+        # Check if the following word(s) fit a toggleable setting
+        # If not, throw error
+        # If so, toggle it
+        # ==================================================
+        if response.startswith("toggle"):
+            if response.split("toggle ")[1] not in ["invocation", "autoresponders", "colored roles"]:
+                embed = oap.makeEmbed(title="Whoops!", description="I couldn't find a toggle with that name.\nMake sure you spelt it correctly!", ctx=ctx)
+                return await ctx.send(embed=embed)
+
+            if response.endswith("invocation"):
+                server_data["delete_invocation"] = False if server_data.get("delete_invocation") == True else True
+                out = "Invocation deletion has"
+                value = "on" if server_data["delete_invocation"] == True else "off"
+
+            if response.endswith("autoresponders"):
+                server_data["autoresponder"] = False if server_data.get("autoresponder") == True else True
+                out = "Autoresponders have"
+                value = "on" if server_data["autoresponder"] == True else "off"
+
+            if response.endswith("colored roles"):
+                if not server_data.get("colored_roles"):
+                    server_data["colored_roles"] = {
+                        "enabled": False,
+                        "required_role": None,
+                        "roles": []
+                    }
+
+                server_data["colored_roles"]["enabled"] = False if server_data["colored_roles"]["enabled"] == True else True
+                out = "Colored roles have"
+                value = "on" if server_data["colored_roles"]["enabled"] == True else "off"
+
+            oap.setJson(f"servers/{ctx.guild.id}", server_data)
+            embed = oap.makeEmbed(title="Success!", description=f"{out} been toggled {value} for {ctx.guild.name}", ctx=ctx)
+            await ctx.send(embed=embed)
+            return oap.log(text=f"Toggled {response.split('toggle ')[1]} {value}", cog="Settings", color="yellow", ctx=ctx)
+
+
+        # ==================================================
+        # If the message starts with category
+        # Check if they gave a valid category
+        # Give them information on that category
+        # ==================================================
+        # if response.startswith("category"):
+        #     category = response.split("category ")[1]
+        #     if category not in ["autoresponders", "colored roles", "halls", "polls"]:
+        #         embed = oap.makeEmbed(title="Whoops!", description="That wasn't a valid category!\nDid you spell it right?", ctx=ctx)
+        #         return ctx.send(embed=embed)
 
 
 # ==================================================
