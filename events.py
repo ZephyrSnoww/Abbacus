@@ -222,6 +222,7 @@ class Events(commands.Cog):
         server_data = oap.getJson(f"servers/{message.guild.id}")
         if server_data.get("autoresponder") == True:
             if message.author.bot: return
+            if message.content.startswith(">>"): return
             if server_data.get("autoresponders"):
                 # ==================================================
                 # Go through all existing autoresponders
