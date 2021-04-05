@@ -33,30 +33,13 @@ class Events(commands.Cog):
         channel = await self.abacus.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         emoji = str(payload.emoji)
-        default = {
-            "fame": {
-                "emoji": "⬆️",
-                "requirement": 4,
-                "channel": None,
-                "message": "[user] was sent to the hall of fame!",
-                "removal_message": "[user] was removed from the hall of fame!"
-            },
-            "shame": {
-                "emoji": "⬇️",
-                "requirement": 4,
-                "channel": None,
-                "message": "[user] was sent to the hall of shame!",
-                "removal_message": "[user] was removed from the hall of shame!"
-            },
-            "message": "**[user]:** [message]\n\n[attachments]"
-        }
 
         # ==================================================
         # Check if data exists
         # If it doesnt, just fill defaults
         # ==================================================
         if not server_data.get("halls"):
-            server_data["halls"] = default
+            return
 
         # ==================================================
         # Check if the emoji matches the servers fame/shame emoji
@@ -67,6 +50,8 @@ class Events(commands.Cog):
         if emoji != server_data["halls"]["fame"]["emoji"] and emoji != server_data["halls"]["shame"]["emoji"]:
             return
         elif message.content.startswith(">>poll"):
+            return
+        elif message.author.bot:
             return
 
         if payload.event_type == "REACTION_ADD":
@@ -79,6 +64,9 @@ class Events(commands.Cog):
         # ==================================================
         hall = "fame" if emoji == server_data["halls"]["fame"]["emoji"] else "shame"
         requirement = server_data["halls"][hall]["requirement"]
+
+        if message.channel.id == server_data["halls"][hall]["channel"]:
+            return
 
         # ==================================================
         # Check if the hall has a channel set

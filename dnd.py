@@ -13,6 +13,7 @@ import re
 class DND(commands.Cog, description="Stat generation, information on items, spells, and the like, and more, for Dungeons and Dragons 5th edition"):
     def __init__(self, bot):
         self.abacus = bot
+        self.cog_name = "DND"
         self.data = oap.getJson("data")
         self.url = "https://www.dnd5eapi.co/api"
 
@@ -236,7 +237,21 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
     # ==================================================
     # Rolling stats
     # ==================================================
-    @commands.command(brief="Roll standard D&D 5E stats", usage="<wanted stats, most to least>", help="I can roll character stats for you!\n\n__**Random Assignment**__\n- By default, I'll just give you a list of numbers.\n- If you want them randomly assigned, just use \"random\"\n`>>roll_stats random`\n\n__**Ordered Assignment**__\n- If you want me to assign the stats in an order you want, list what you want, from highest to lowest.\n- You don't have to input all stats!\n- I'll randomly assign the ones you don't tell me.\n`>>roll_stats int, con, cha`\n`>>rs str, con, int, dex, cha, wis`", aliases=["rs"])
+    @commands.command(brief="Roll standard D&D 5E stats", usage="""\
+        <wanted stats, most to least>", help="I can roll character stats for you!
+        
+        __**Random Assignment**__
+        - By default, I'll just give you a list of numbers.
+        - If you want them randomly assigned, just use "random"
+        `>>roll_stats random`
+        
+        __**Ordered Assignment**__
+        - If you want me to assign the stats in an order you want, list what you want, from highest to lowest.
+        - You don't have to input all stats!
+        - I'll randomly assign the ones you don't tell me.
+        `>>roll_stats int, con, cha`
+        `>>rs str, con, int, dex, cha, wis`\
+        """, aliases=["rs"])
     async def roll_stats(self, ctx, *, _in=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -249,6 +264,7 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # Check if they entered valid stat names (if ordered)
         # Make the output dict
         # ==================================================
+        stats = ["str", "dex", "con", "int", "wis", "cha"]
         ordered = False if _in == "" else True
         random = False
         if _in == "random":
@@ -256,9 +272,13 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
             random = True
         if ordered:
             for stat in _in.split(" "):
-                if stat not in ["str", "dex", "con", "int", "wis", "cha"]:
-                    embed = oap.makeEmbed(title="Whoops!", description=f"The stat \"{stat}\" is not a valid stat\nValid stats are str, dex, con, int, wis, or cha", ctx=ctx)
-                    return await ctx.send(embed=embed)
+                if stat not in stats:
+                    return await oap.give_error(
+                        text=f"The stat \"{stat}\" isn't a valid stat!",
+                        categories=stats,
+                        category_title="Stats",
+                        ctx=ctx
+                    )
         
         stats = {
             "str": 0,
@@ -313,9 +333,21 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # ==================================================
         # Send output and log to console
         # ==================================================
-        embed = oap.makeEmbed(title="Rolled stats!", description=(", ".join([str(roll) for roll in rolls])) if (not ordered and not random) else ("\n".join([f"{key.title()}: {value}" for key, value in stats.items()])), ctx=ctx)
-        await ctx.send(embed=embed)
-        oap.log(text="Rolled stats", cog="DND", color="magenta", ctx=ctx)
+        return await oap.give_output(
+            embed_title=f"Rolled stats!",
+            embed_description=(
+                ", ".join(
+                    [str(roll) for roll in rolls]
+                )) if (not ordered and not random) 
+                else (
+                    "\n".join(
+                        [f"{key.title()}: {value}" for key, value in stats.items()]
+                    )),
+            log_text=f"Rolled stats",
+            cog=self.cog_name,
+            ctx=ctx,
+            data=server_data
+        )
 
 
     # ==================================================
@@ -331,9 +363,16 @@ class DND(commands.Cog, description="Stat generation, information on items, spel
         # Send output
         # Log to console
         # ==================================================
-        embed = oap.makeEmbed(title="Here Are All Skills", description="*- skill (abbreviation)*\n\n- " + "\n- ".join([f"{value} ({key})" for key, value in oap.skills.items()]), ctx=ctx)
-        await ctx.send(embed=embed)
-        oap.log(text="Listed skills", cog="DND", color="magenta", ctx=ctx)
+        return await oap.give_output(
+            embed_title=f"Here are all skills!",
+            embed_description=
+                "*- skill (abbreviation)*\n\n- " + 
+                "\n- ".join([f"{value} ({key})" for key, value in oap.skills.items()]),
+            log_text=f"Listed skills",
+            cog=self.cog_name,
+            ctx=ctx,
+            data=server_data
+        )
 
 
     # ==================================================

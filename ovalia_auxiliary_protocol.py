@@ -8,6 +8,7 @@ import os
 
 def clear(): return os.system("cls")
 
+linebreak = "\n"
 skills = {
     "acr": "Acrobatics",
     "ani": "Animal Handling",
@@ -68,6 +69,17 @@ abilities = {
     "wis": "Wisdom",
     "cha": "Charisma"
 }
+colors = {
+    None: "green",
+    "DND": "magenta",
+    "Events": "magenta",
+    "General": "cyan",
+    "Images": "red",
+    "Settings": "yellow"
+}
+
+
+# class 
 
 
 def getJson(_file):
@@ -90,7 +102,12 @@ async def tryDelete(_ctx):
         pass
 
 
-def makeEmbed(title="TITLE", description="DESCRIPTION", color=0xffadb6, ctx=None):
+def makeEmbed(
+    title="TITLE",
+    description="DESCRIPTION",
+    color=0xffadb6,
+    ctx=None):
+
     if ctx:
         user_color = getJson(f"users/{ctx.author.id}").get("color")
         _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=datetime.now()+timedelta(hours=7))
@@ -101,6 +118,108 @@ def makeEmbed(title="TITLE", description="DESCRIPTION", color=0xffadb6, ctx=None
     return _out
 
 
+async def give_error(
+    text=None,
+    categories=None,
+    category_title="Categories",
+    examples=None,
+    ctx=None):
+
+    if not text:
+        raise ValueError("Text for the embed description must be given")
+
+    if not ctx:
+        raise ValueError("Context must be given")
+    
+    embed = makeEmbed(
+        title="Whoops!",
+        description=f"{text}",
+        ctx=ctx)
+
+    if categories:
+        embed.add_field(
+            name=f"Valid {category_title}",
+            description=f"{linebreak.join(categories)}",
+            inline=False)
+
+    if examples:
+        embed.add_field(
+            name="Examples",
+            description=f"{linebreak.join(examples)}",
+            inline=False)
+
+    return await ctx.send(embed=embed)
+
+async def give_output(
+    embed_title=None,
+    embed_description=None,
+    embed=None,
+    log_text=None,
+    cog=None,
+    ctx=None,
+    data=None,
+    data_type="server"):
+
+    # ==================================================
+    # Check if necesarry inputs were given
+    # ==================================================
+    if not embed_title and not embed:
+        raise ValueError("An embed title must be given")
+
+    if not embed_description and not embed:
+        raise ValueError("An embed description must be given")
+
+    if not ctx:
+        raise ValueError("Context must be given")
+
+    if embed_title:
+        embed_title = embed_title.title()
+
+    if cog == None:
+        cog = "Main"
+
+    # ==================================================
+    # Get the color of the given cog
+    # Throw error if it doesnt exist
+    # ==================================================
+    try:
+        color = colors[cog]
+    except:
+        raise ValueError("A valid cog must be given")
+
+    if data:
+        if data_type == "server":
+            setJson(f"servers/{ctx.guild.id}", data)
+        elif data_type == "user":
+            setJson(f"users/{ctx.author.id}", data)
+
+    if embed:
+        await ctx.send(embed=embed)
+        if log_text:
+            log(
+                text=log_text,
+                cog=cog,
+                color=color,
+                ctx=ctx
+            )
+        return
+
+    embed = makeEmbed(
+        title=embed_title,
+        description=embed_description,
+        ctx=ctx
+    )
+    await ctx.send(embed=embed)
+    if log_text:
+        log(
+            text=log_text,
+            cog=cog,
+            color=color,
+            ctx=ctx
+        )
+    return
+
+
 def hexToRGB(hexIn):
     return tuple(int(hexIn[i:i + 2], 16) for i in (0, 2, 4))
 
@@ -109,7 +228,13 @@ def getTime():
     return strftime("%m/%d/%Y %I:%M:%S %p", localtime())
 
 
-def log(text="PLACEHOLDER", cog="Main", color="green", ctx=None, event=False):
+def log(
+    text="PLACEHOLDER",
+    cog="Main",
+    color="green",
+    ctx=None,
+    event=False):
+
     if ctx:
         if event:
             print("[%s] [%s] [%s] %s [%s] %s %s" % (getTime(), colored("Abacus", "blue"), colored(cog, color), ("." * (10 - len(cog))), ("Direct Message" if not ctx.guild else ctx.guild.name), ("." * (30 - len("Direct Message" if not ctx.guild else ctx.guild.name))), text))
