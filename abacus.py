@@ -1,9 +1,9 @@
 from discord.ext import commands
-from pretty_help import PrettyHelp, Navigation
 import ovalia_auxiliary_protocol as oap
 from sys import argv
 import traceback
 import discord
+import difflib
 
 
 # ==================================================
@@ -19,8 +19,7 @@ import discord
 # Define the is_owner() check
 # ==================================================
 oap.clear()
-nav = Navigation()
-abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960, help_command=PrettyHelp())
+abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960)
 data = oap.getJson("data")
 cogs = data["cogs"]
 
@@ -72,19 +71,38 @@ async def on_guild_remove(guild):
 
 # ==================================================
 # On a command error
-# If the command wasnt found, do nothing
-# If they didnt have permission to do the cmomand, say so
-# Otherwise, send the bot owner a DM with the error
-# And tell the user something went wrong
 # ==================================================
 @abacus.event
 async def on_command_error(ctx, error):
+    # ==================================================
+    # Basically ignore if any of the following:
+    # - Message starts with >>reload
+    # - The command isnt found
+    # - User doesnt have permissions
+    # - The command is disabled
+    # ==================================================
     if ctx.message.content.startswith(">>reload"):
         return
     if isinstance(error, discord.ext.commands.CommandNotFound):
-        embed = oap.makeEmbed(title="Whoops!", description="That command doesnt exist", ctx=ctx)
-        await ctx.send(embed=embed)
-        return oap.log(text=f"Tried to do a command that doesnt exist", ctx=ctx)
+        embed = oap.makeEmbed(
+            title=f"Whoops!",
+            description=f"That command doesnt exist!",
+            ctx=ctx
+        )
+        
+        if len(difflib.get_close_matches(ctx.message.content.split(" ")[0].split(">>")[1], [command.name for command in abacus.commands])) > 0:
+            embed.add_field(
+                name=f"Did You Mean...",
+                value=">>" + "\n>>".join(difflib.get_close_matches(ctx.message.content.split(" ")[0].split(">>")[1], [command.name for command in abacus.commands], cutoff=0.3)),
+                inline=False
+            )
+        
+        return await oap.give_output(
+            embed=embed,
+            log_text=f"Tried to do a command that doesn't exist",
+            cog=None,
+            ctx=ctx
+        )
     if isinstance(error, discord.ext.commands.MissingPermissions):
         embed = oap.makeEmbed(title="Whoops!", description="You dont have the correct permissions to do that command", ctx=ctx)
         await ctx.send(embed=embed)
@@ -93,15 +111,29 @@ async def on_command_error(ctx, error):
         embed = oap.makeEmbed(title="Whoops!", description="That command is disabled", ctx=ctx)
         await ctx.send(embed=embed)
         return oap.log(text=f"Tried to do a disabled command", ctx=ctx)
+
+    # ==================================================
+    # Get the owner by id
+    # ==================================================
     author = await abacus.fetch_user(184474965859368960)
+
+    # ==================================================
+    # Make a big ass embed with all the error info
+    # ==================================================
     embed1 = oap.makeEmbed(title="Yikes", description="```" + "\n".join(traceback.format_tb(error.original.__traceback__)) + "```")
     embed1.add_field(name="Command", value=ctx.message.content.split(" ")[0], inline=True)
     embed1.add_field(name="Message", value=ctx.message.content, inline=True)
     embed1.add_field(name="Server", value=ctx.guild.name, inline=True)
     embed1.add_field(name="Author", value=ctx.author.name, inline=True)
     embed1.add_field(name="Error", value=f"`{error.original}`", inline=True)
+
+    # ==================================================
+    # Send the embed to the owner
+    # Give the user an error message
+    # Log
+    # ==================================================
     await author.send(embed=embed1)
-    embed2 = oap.makeEmbed(title="Uh Oh!", description=f"Whatever you did, I got the following error.\nIve told my author about this, hopefully it should be fixed soon", ctx=ctx)
+    embed2 = oap.makeEmbed(title="Uh Oh!", description=f"Whatever you did, I got the following error.\nIve told my author about this, hopefully it should be fixed soon!", ctx=ctx)
     embed2.add_field(name="Error", value=f"`{error.original}`")
     await ctx.send(embed=embed2)
     oap.log(text=f"Got an error from the {ctx.message.content.split(' ')[0]} command", ctx=ctx)
