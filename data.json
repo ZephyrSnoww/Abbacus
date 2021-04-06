@@ -4,6 +4,7 @@
         "images",
         "settings",
         "dnd",
-        "events"
+        "events",
+        "automod"
     ]
 }
