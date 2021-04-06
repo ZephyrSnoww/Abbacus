@@ -31,7 +31,10 @@ class Events(commands.Cog):
         server_data = oap.getJson(f"servers/{payload.guild_id}")
         guild = await self.abacus.fetch_guild(payload.guild_id)
         channel = await self.abacus.fetch_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except:
+            return
         emoji = str(payload.emoji)
 
         # ==================================================
@@ -104,7 +107,7 @@ class Events(commands.Cog):
             # ==================================================
             in_hall = False
             for i in range(len(server_data["sent_hall_messages"])):
-                if server_data["sent_hall_messages"][i]["id"] == message.id:
+                if server_data["sent_hall_messages"][i]["id"] == payload.message_id:
                     server_data["sent_hall_messages"][i]["score"] = score
                     oap.setJson(f"servers/{guild.id}", server_data)
                     in_hall = True
@@ -203,14 +206,15 @@ class Events(commands.Cog):
     # ==================================================
     @commands.Cog.listener()
     async def on_message(self, message):
+        if message.author.bot: return
+        if message.content.startswith(">>"): return
+
         # ==================================================
         # Get server data
         # If they have autoresponders enabled
         # ==================================================
         server_data = oap.getJson(f"servers/{message.guild.id}")
         if server_data.get("autoresponder") == True:
-            if message.author.bot: return
-            if message.content.startswith(">>"): return
             if server_data.get("autoresponders"):
                 # ==================================================
                 # Go through all existing autoresponders
