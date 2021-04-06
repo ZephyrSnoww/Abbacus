@@ -71,11 +71,13 @@ abilities = {
 }
 colors = {
     None: "green",
+    "Main": "green",
     "DND": "magenta",
     "Events": "magenta",
     "General": "cyan",
     "Images": "red",
-    "Settings": "yellow"
+    "Settings": "yellow",
+    "Moderation": "red"
 }
 
 
@@ -106,14 +108,27 @@ def makeEmbed(
     title="TITLE",
     description="DESCRIPTION",
     color=0xffadb6,
-    ctx=None):
+    ctx=None,
+    timestamp=datetime.now()+timedelta(hours=6),
+    author=None):
+
+    if not color:
+        color = 0xffadb6
 
     if ctx:
         user_color = getJson(f"users/{ctx.author.id}").get("color")
-        _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=datetime.now()+timedelta(hours=7))
+        if timestamp:
+            _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=timestamp)
+        else:
+            _out = discord.Embed(title=title, description=description, color=user_color if user_color else color)
     else:
-        _out = discord.Embed(title=title, description=description, color=color, timestamp=datetime.now())
-    if ctx:
+        if timestamp:
+            _out = discord.Embed(title=title, description=description, color=color, timestamp=timestamp)
+        else:
+            _out = discord.Embed(title=title, description=description, color=color)
+    if author:
+        _out.set_author(name=author.nick if author.nick else author.name, icon_url=author.avatar_url)
+    elif ctx:
         _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
     return _out
 
@@ -139,13 +154,13 @@ async def give_error(
     if categories:
         embed.add_field(
             name=f"Valid {category_title}",
-            description=f"{linebreak.join(categories)}",
+            value=f"{linebreak.join(categories)}",
             inline=False)
 
     if examples:
         embed.add_field(
             name="Examples",
-            description=f"{linebreak.join(examples)}",
+            value=f"{linebreak.join(examples)}",
             inline=False)
 
     return await ctx.send(embed=embed)
@@ -192,6 +207,8 @@ async def give_output(
             setJson(f"servers/{ctx.guild.id}", data)
         elif data_type == "user":
             setJson(f"users/{ctx.author.id}", data)
+        elif data_type == "hall":
+            setJson(f"servers/halls/{ctx.guild.id}", data)
 
     if embed:
         await ctx.send(embed=embed)
@@ -231,9 +248,12 @@ def getTime():
 def log(
     text="PLACEHOLDER",
     cog="Main",
-    color="green",
+    color=None,
     ctx=None,
     event=False):
+
+    if color == None:
+        color = colors[cog]
 
     if ctx:
         if event:
