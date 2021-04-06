@@ -602,8 +602,25 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         # If they didnt enter anything
         # Ask for a category
         # ==================================================
+
+
         linebreak = "\n"
-        embed = oap.makeEmbed(title="Alright!", description=f"Send a message with the category you want help with.\n\n__**Valid Categories**__\n{linebreak.join([f'- {cog}' for cog in self.abacus.cogs])}", ctx=ctx)
+        embed = oap.makeEmbed(title="Alright!",
+            # __**Hey, I'm Abacus!**__
+            # I'm a general purpose discord bot written by programming hobbyist {self.abacus.owner.mention}! I'm basically always in progress, so if your favorite command starts giving you errors, don't worry! Usually, {self.abacus.owner.mention} will have it fixed pretty quickly!
+            
+            # __**Almost everything I do is disabled by default**__
+            # I do a lot of things, which makes me a bit hard to manage sometimes. To make it easier on you, I disable most things for any new server I join. Don't worry! You can enable them with `>>toggle`
+
+            # __**Need Help? Have a Suggestion?**__
+            # Feel free to join my support server!
+
+            description=f"""\
+                Send a message with the category you want help with.
+            
+                __**Valid Categories**__
+                {linebreak.join([f'- {cog}' for cog in self.abacus.cogs])}
+            """, ctx=ctx)
         cog_request_message = await ctx.send(embed=embed)
 
         def check(message):
