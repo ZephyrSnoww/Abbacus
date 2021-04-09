@@ -31,6 +31,7 @@ class Events(commands.Cog):
         server_data = oap.getJson(f"servers/{payload.guild_id}")
         guild = await self.abacus.fetch_guild(payload.guild_id)
         channel = await self.abacus.fetch_channel(payload.channel_id)
+        user = await self.abacus.fetch_user(payload.user_id)
         try:
             message = await channel.fetch_message(payload.message_id)
         except:
@@ -156,7 +157,13 @@ class Events(commands.Cog):
                     "hall_id": hall_message.id
                 })
                 oap.setJson(f"servers/{guild.id}", server_data)
-                return oap.log(text=f"A message got to the hall of {hall}", cog="Events", color="magenta")
+                return oap.log(
+                    text=f"Got a message to the hall of {hall}",
+                    cog="Events",
+                    color="magenta",
+                    payload=True,
+                    guild=guild,
+                    author=user)
 
         # ==================================================
         # If the score doesnt meet the requirement
@@ -183,7 +190,13 @@ class Events(commands.Cog):
                         oap.setJson(f"servers/{guild.id}", server_data)
                         await message.channel.send(output)
                         await hall_message.delete()
-                        return oap.log(text=f"A message got removed from the hall of {hall}", cog="Events", color="magenta")
+                        return oap.log(
+                            text=f"Removed a message from the hall of {hall}",
+                            cog="Events",
+                            color="magenta",
+                            payload=True,
+                            guild=guild,
+                            author=user)
 
 
     # ==================================================
