@@ -31,7 +31,33 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     # Roll command
     # ==================================================
-    @commands.command(brief="Roll a die (1d20 by default)", usage="[die]", help="__**Dice rolling, D&D style**__\n- 1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides.\n`>>roll 1d20`\n\n__**Modifiers**__\n- You can add +[number] to the end to add a modifier.\n`>>roll 1d20+4`\n\n__**Individually Adding Modifiers**__\n- By default, the modifier is added to the total of all rolls.\n- Use individual_mod=True to apply it to each roll individually.\n`>>roll 4d20+4 individual_mod=True`\n\n__**Removing High or Low Rolls**__\n- Cross out a number of lowest or highest values, using remove=highest or remove=3lowest.\n`>>roll 5d20 remove=2lowest`\n\n__**Rolling Using Characters**__\n- If you've imported characters with >>import_character, you can roll character-specific die.\n- Do `>>list_skills` to list all available skills you can roll.\n- When using this, add \"adv\" or \"dis\" to roll with advantage or disadvantage\n- When using this, add \"save\" to roll a saving throw.\n`>>roll Brooklyn acr`\n`>>roll Avi ste adv`\n`>>roll Itova dec save`\n`>>roll Acdern ins save adv`")
+    @commands.command(brief="Roll a die (1d20 by default)", usage="[die]", help="""\
+        __**Dice rolling, D&D style**__
+        - 1d20 means 1 die with 20 sides. 3d6 means 3 dice, each with 6 sides.
+        `>>roll 1d20`
+        
+        __**Modifiers**__
+        - You can add +[number] to the end to add a modifier.
+        `>>roll 1d20+4`
+        
+        __**Individually Adding Modifiers**__
+        - By default, the modifier is added to the total of all rolls.
+        - Use individual_mod=True to apply it to each roll individually.
+        `>>roll 4d20+4 individual_mod=True`
+        
+        __**Removing High or Low Rolls**__
+        - Cross out a number of lowest or highest values, using remove=highest or remove=3lowest.
+        `>>roll 5d20 remove=2lowest`
+        
+        __**Rolling Using Characters**__
+        - If you've imported characters with >>import_character, you can roll character-specific die.
+        - Do `>>list_skills` to list all available skills you can roll.
+        - When using this, add \"adv\" or \"dis\" to roll with advantage or disadvantage
+        - When using this, add \"save\" to roll a saving throw.
+        `>>roll Brooklyn acr`
+        `>>roll Avi ste adv`
+        `>>roll Itova dec save`
+        `>>roll Acdern ins save adv`""")
     async def roll(self, ctx, die="1d20", *, args=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -548,7 +574,9 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
     # ==================================================
     @commands.command(brief="Get my invite link", usage="", help="Want to add me to your server? This makes it easy for you!\n\n__**Examples**__\n`>>invite`")
     async def invite(self, ctx):
-        await oap.tryDelete(ctx)
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
     
         embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=268561520&scope=bot", ctx=ctx)
         await ctx.send(embed=embed)
