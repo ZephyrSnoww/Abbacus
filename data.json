@@ -5,6 +5,7 @@
         "settings",
         "dnd",
         "events",
-        "automod"
+        "automod",
+        "games"
     ]
 }
