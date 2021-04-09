@@ -25,7 +25,7 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
         help
         """)
     async def create_embed(self, ctx):
-        global get_channel, get_title, get_description, get_time, get_author, get_color
+        global get_channel, get_title, get_description, get_time, get_author, get_color, color, image
 
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -36,7 +36,7 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
         # (Just check if theauthor is the original author)
         # ==================================================
         def check(message):
-            return message.author.id == ctx.author.id
+            return message.author.id == ctx.author.id and message.channel.id == ctx.channel.id
 
         # ==================================================
         # Define all the needed variables
@@ -47,6 +47,7 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
         time = True
         author = None
         color = 0xffadb6
+        image = None
 
         channel_ask = f"""\
             Please send the channel you'd like the embed to be sent in!
@@ -65,6 +66,10 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
         color_ask = f"""\
             Would you like to set a custom color for the embed?
             (send a hex code, or say no)"""
+
+        image_ask = f"""\
+            Would you like the embed to have an image?
+            (send an image link, attach an image, or say no)"""
 
         author_ask = f"""\
             Would you like to show an author at the top of the embed?
@@ -244,7 +249,7 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                 )
             elif response.content.lower() == "no":
                 author = None
-                return await get_final()
+                return await get_image()
             elif len(response.mentions) == 0:
                 await oap.give_error(
                     text=f"Please ping a user, or say \"no\"!\nYou can also send \"cancel\", and I'll stop giving you prompts.",
@@ -253,11 +258,46 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                 return await get_author(error=True)
             else:
                 author = response.mentions[0]
+                return await get_image()
+
+
+        async def get_image(final=False, error=False):
+            global image
+
+            if not error:
+                await oap.give_output(
+                    embed_title=f"Alright!",
+                    embed_description=image_ask,
+                    ctx=ctx
+                )
+            response = await self.abacus.wait_for("message", check=check)
+
+            if response.content.lower() == "cancel":
+                return await oap.give_output(
+                    embed_title=f"Alright!",
+                    embed_description=f"Embed creation cancelled.",
+                    ctx=ctx
+                )
+            elif response.content.lower() == "no":
+                image = None
+                return await get_final()
+            elif len(response.attachments) == 0:
+                if response.content.lower().startswith("http"):
+                    image = response.content
+                    return await get_final()
+                else:
+                    await oap.give_error(
+                        text=f"Please enter a valid URL!\nYou can also send \"cancel\", and I'll stop giving you prompts.",
+                        ctx=ctx
+                    )
+                    return await get_image(error=True)
+            else:
+                image = response.attachments[0].url
                 return await get_final()
 
 
         async def get_final(error=False):
-            global channel, title, description, time, author, color
+            global channel, title, description, time, author, color, image
 
             if not error:
                 await oap.give_output(
@@ -266,7 +306,8 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                         description=description,
                         timestamp=None if not time else (datetime.now()+timedelta(hours=6)),
                         author=author,
-                        color=color
+                        color=color,
+                        image=image
                     ),
                     ctx=ctx
                 )
@@ -300,11 +341,12 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                         description=description,
                         timestamp=None if not time else (datetime.now()+timedelta(hours=6)),
                         author=author,
-                        color=color
+                        color=color,
+                        image=image
                     )
                 )
                 return oap.log(text="Created an embed", ctx=ctx, cog=self.cog_name)
-            elif response.content.lower() not in ["channel", "title", "description", "author", "time", "color"]:
+            elif response.content.lower() not in ["channel", "title", "description", "author", "time", "color", "image"]:
                 await oap.give_error(
                     text=f"Please enter either \"yes\", \"cancel\", or an item to change!",
                     categories=[
@@ -313,7 +355,8 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                         "description",
                         "author",
                         "time",
-                        "color"
+                        "color",
+                        "image"
                     ],
                     category_title="Items",
                     ctx=ctx
