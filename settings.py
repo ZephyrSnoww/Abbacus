@@ -948,7 +948,8 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             "create",
             "edit",
             "delete",
-            "role"
+            "role",
+            "list"
         ]
 
         examples = [
@@ -1121,17 +1122,25 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         if _one == "list":
             owned_roles = []
-            for role in server_data["colored_roles"]["roles"]:
-                if role["creator"] == ctx.author.id or manager:
-                    manager_addition = f" (<!{role['id']}>)"
-                    owned_roles.append(f"<!@{role['id']}>{manager_addition if manager else ''}")
+            to_delete = []
+            for i in range(len(server_data["colored_roles"]["roles"])):
+                role = server_data["colored_roles"]["roles"][i]
+                if ctx.guild.get_role(role["id"]) == None:
+                    to_delete.append(i)
+                elif role["creator"] == ctx.author.id or manager:
+                    manager_addition = f" (<@{role['creator']}>)"
+                    owned_roles.append(f"<@&{role['id']}>{manager_addition if manager else ''}")
+
+            for item in to_delete:
+                del server_data["colored_roles"]["roles"][item]
 
             return await oap.give_output(
-                embed_title=f"all roles accessible by {ctx.author.mention}",
+                embed_title=f"all roles accessible by {ctx.author.mention} :",
                 embed_description=("\n".join(owned_roles) if len(owned_roles) > 0 else "You don't own any roles!"),
                 log_text=f"Listed accessible colored roles",
                 cog=self.cog_name,
-                ctx=ctx
+                ctx=ctx,
+                data=server_data
             )
 
         # ==================================================
