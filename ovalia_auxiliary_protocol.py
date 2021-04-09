@@ -77,7 +77,8 @@ colors = {
     "General": "cyan",
     "Images": "red",
     "Settings": "yellow",
-    "Moderation": "red"
+    "Moderation": "red",
+    "Games": "cyan"
 }
 
 
@@ -110,7 +111,9 @@ def makeEmbed(
     color=0xffadb6,
     ctx=None,
     timestamp=datetime.now()+timedelta(hours=6),
-    author=None):
+    author=None,
+    image=None,
+    thumbnail=None):
 
     if not color:
         color = 0xffadb6
@@ -130,6 +133,10 @@ def makeEmbed(
         _out.set_author(name=author.nick if author.nick else author.name, icon_url=author.avatar_url)
     elif ctx:
         _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
+    if image:
+        _out.set_image(url=image)
+    if thumbnail:
+        _out.set_thumbnail(url=thumbnail)
     return _out
 
 
@@ -250,18 +257,28 @@ def log(
     cog="Main",
     color=None,
     ctx=None,
-    event=False):
+    event=False,
+    payload=False,
+    guild=None,
+    author=None):
 
     if color == None:
         color = colors[cog]
 
-    if ctx:
+    if payload:
+        guild = "Direct Message" if not guild else guild.name
+        author = author.name
+    elif ctx:
+        guild = "Direct Message" if not ctx.guild else ctx.guild.name
+        author = ctx.author.name
+
+    if ctx or payload:
         if event:
-            print("[%s] [%s] [%s] %s [%s] %s %s" % (getTime(), colored("Abacus", "blue"), colored(cog, color), ("." * (10 - len(cog))), ("Direct Message" if not ctx.guild else ctx.guild.name), ("." * (30 - len("Direct Message" if not ctx.guild else ctx.guild.name))), text))
+            print(f"[{getTime()}] [{colored('Abacus', 'blue')}] [{colored(cog, color)}] {'.' * (14-len(cog))} [{guild}] {'.' * (30-len(guild))} {text}")
         else:
-            print("[%s] [%s] [%s] %s [%s] %s [%s] %s %s" % (getTime(), colored("Abacus", "blue"), colored(cog, color), ("." * (10 - len(cog))), ("Direct Message" if not ctx.guild else ctx.guild.name), ("." * (30 - len("Direct Message" if not ctx.guild else ctx.guild.name))), ctx.author.name, ("." * (20 - len(ctx.author.name))), text))
+            print(f"[{getTime()}] [{colored('Abacus', 'blue')}] [{colored(cog, color)}] {'.' * (14-len(cog))} [{guild}] {'.' * (30-len(guild))} [{author}] {'.' * (20-len(author))} {text}")
     else:
-        print("[%s] [%s] [%s] %s %s" % (getTime(), colored("Abacus", "blue"), colored(cog, color), ("." * (10 - len(cog))), text))
+        print(f"[{getTime()}] [{colored('Abacus', 'blue')}] [{colored(cog, color)}] {'.' * (14-len(cog))} {text}")
 
 
 # Valid Termcolor Colors:
