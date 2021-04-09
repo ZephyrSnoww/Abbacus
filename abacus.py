@@ -61,10 +61,12 @@ async def on_ready():
 # On guild join / leave
 # Log to console
 # ==================================================
+@abacus.event
 async def on_guild_join(guild):
     oap.log(text=f"Joined \"{guild.name}\"")
 
 
+@abacus.event
 async def on_guild_remove(guild):
     oap.log(text=f"Left \"{guild.name}\"")
 
@@ -93,7 +95,7 @@ async def on_command_error(ctx, error):
         if len(difflib.get_close_matches(ctx.message.content.split(" ")[0].split(">>")[1], [command.name for command in abacus.commands])) > 0:
             embed.add_field(
                 name=f"Did You Mean...",
-                value=">>" + "\n>>".join(difflib.get_close_matches(ctx.message.content.split(" ")[0].split(">>")[1], [command.name for command in abacus.commands], cutoff=0.3)),
+                value=">>" + "\n>>".join(difflib.get_close_matches(ctx.message.content.split(" ")[0].split(">>")[1], [command.name for command in abacus.commands], cutoff=0.5)),
                 inline=False
             )
         
