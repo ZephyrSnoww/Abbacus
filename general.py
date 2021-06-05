@@ -20,6 +20,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         self.data = oap.getJson("data")
         self.nasa_key = ""
         self.nasa = nasapy.Nasa(key=self.nasa_key)
+        self.cog_name = "General"
 
     # ==================================================
     # Unload event
@@ -146,7 +147,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
                 # ==================================================
                 embed = oap.makeEmbed(title=output, description=", ".join(rolls), ctx=ctx)
                 await ctx.send(embed=embed)
-                return oap.log(text=f"Rolled {args.split(' ')[0]} for the character \"{die}\"")
+                return oap.log(text=f"Rolled {args.split(' ')[0]} for the character \"{die}\"", cog=self.cog_name, ctx=ctx)
 
 
         # ==================================================
@@ -245,6 +246,19 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         # ==================================================
         # Send output and log to console
         # ==================================================
+        # if die == "1d6":
+        #     embed = oap.makeEmbed(
+        #         title=f"Rolled {die}",
+        #         description=f"",
+        #         ctx=ctx
+        #     )
+
+        #     return oap.log(
+        #         text=f"Rolled {die}",
+        #         cog=self.cog_name,
+        #         ctx=ctx
+        #     )
+
         embed = oap.makeEmbed(title=f"Rolled {die}", description=(", ".join(rolls)), ctx=ctx)
         if len(rolls) > 1:
             embed.add_field(name="Total", value=((f"{str(total+mod)}{(f' ({total} without mod)') if mod > 0 else ''}") if not individual_mod else (f"{total}")))
@@ -578,7 +592,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
     
-        embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=268561520&scope=bot", ctx=ctx)
+        embed = oap.makeEmbed(title="Here's My Invite Link!", description="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=8&scope=bot", ctx=ctx)
         await ctx.send(embed=embed)
         oap.log(text="Got an invite link", cog="General", color="cyan", ctx=ctx)
 
@@ -596,7 +610,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         # If they want general help
         # Make a base embed
         # ==================================================
-        if _in == "all": 
+        if _in == "all" or _in == "":
             embed = oap.makeEmbed(title="Here are all of my cogs and commands".title(), description="`>>help [command]` for more detailed information.", ctx=ctx)
             
             # ==================================================
@@ -604,7 +618,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
             # List each command in the cog's field
             # ==================================================
             for cog in self.abacus.cogs:
-                if cog not in ["Events"]:
+                if cog not in ["Events", "Webserver"]:
                     cog_commands = self.abacus.cogs[cog].walk_commands()
                     valid_commands = list(filter(lambda c: (c.enabled == True and c.hidden == False), cog_commands))
                     embed.add_field(name=f"__**{cog}**__", value=("\n".join([f"**>>{command.name}** - {command.short_doc}" for command in valid_commands])), inline=False)

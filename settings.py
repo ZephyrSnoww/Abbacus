@@ -4,6 +4,7 @@ from discord.ext import tasks, commands
 from importlib import reload
 import emoji as em
 import discord
+import inspect
 import re
 
 
@@ -94,10 +95,17 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             "invocation"
         ]
 
+        if category == "":
+            return await oap.give_output(
+                embed_title=f"the {re.sub(r'_', ' ', inspect.stack()[0][3])} command!",
+                embed_description=self.abacus.get_command(inspect.stack()[0][3]).help,
+                ctx=ctx
+            )
+
         # ==================================================
         # Arg checking
         # ==================================================
-        if category == "" or category not in categories:
+        if category not in categories:
             return await oap.give_error(
                 text=f"Please enter a valid category.",
                 categories=categories,
@@ -270,6 +278,13 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         categories = [
             "color"
         ]
+
+        if category == "":
+            return await oap.give_output(
+                embed_title=f"the {re.sub(r'_', ' ', inspect.stack()[0][3])} command!",
+                embed_description=self.abacus.get_command(inspect.stack()[0][3]).help,
+                ctx=ctx
+            )
     
         # ==================================================
         # Arg checking
@@ -365,7 +380,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # ==================================================
     # Hall of fame and shame config
     # ==================================================
-    @commands.command(brief="Change hall of fame and shame settings", usage="[fame, shame, or message] [setting] [value]", help="""\
+    @commands.command(enabled=False, brief="Change hall of fame and shame settings", usage="[fame, shame, or message] [setting] [value]", help="""\
         __**Required Permissions**__
         - Manage Server
         
@@ -690,6 +705,13 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
+
+        if which == "":
+            return await oap.give_output(
+                embed_title=f"the {re.sub(r'_', ' ', inspect.stack()[0][3])} command!",
+                embed_description=self.abacus.get_command(inspect.stack()[0][3]).help,
+                ctx=ctx
+            )
     
         # ==================================================
         # If they toggle autoresponders
@@ -938,7 +960,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         Remove a role that you've created. If you have the Manage Server permission, you can remove any created role.
         `>>colored_role delete Red`
         """, aliases=["colored_role"])
-    async def colored_roles(self, ctx, _one="", _two="", _three="", _four=""):
+    async def colored_roles(self, ctx, _action="", _role="", _three="", _four=""):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
             await oap.tryDelete(ctx)
@@ -961,9 +983,20 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         ]
 
         # ==================================================
+        # If they didnt give any args
+        # Give them the help message
+        # ==================================================
+        if _action == "":
+            return await oap.give_output(
+                embed_title=f"The Colored Roles Command!",
+                embed_description=self.abacus.get_command("colored_roles").help,
+                ctx=ctx
+            )
+
+        # ==================================================
         # Argument checking
         # ==================================================
-        if _one not in actions:
+        if _action not in actions:
             return await oap.give_error(
                 text=f"Please enter a valid action!",
                 categories=actions,
@@ -990,7 +1023,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         # If they want to toggle colored roles
         # ==================================================
-        if _one == "toggle":
+        if _action == "toggle":
             # ==================================================
             # Check if the user has the manage server permission
             # ==================================================
@@ -1040,11 +1073,11 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         # If they want to change permissions
         # ==================================================
-        if _one == "role":
+        if _action == "role":
             # ==================================================
             # Check if they input a role
             # ==================================================
-            if _two == "":
+            if _role == "":
                 return await oap.give_error(
                     text=f"Please enter a role, by pinging the role.",
                     examples=[
@@ -1067,7 +1100,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # ==================================================
             # Check if they want to reset the role
             # ==================================================
-            if _two == "reset":
+            if _role == "reset":
                 server_data["colored_roles"]["required_role"] = None
 
                 return await oap.give_output(
@@ -1084,7 +1117,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # Get role id
             # Try to get the role object by id
             # ==================================================
-            role_id = _two[3:-1]
+            role_id = _role[3:-1]
             role = ctx.guild.get_role(int(role_id))
 
             # ==================================================
@@ -1120,7 +1153,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         # If they want to list colored roles
         # ==================================================
-        if _one == "list":
+        if _action == "list":
             owned_roles = []
             to_delete = []
             for i in range(len(server_data["colored_roles"]["roles"])):
@@ -1174,7 +1207,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         owns_role = False
         role_index = None
         for i in range(len(server_data["colored_roles"]["roles"])):
-            if server_data["colored_roles"]["roles"][i]["name"] == _two:
+            if server_data["colored_roles"]["roles"][i]["name"] == _role:
                 role_exists = True
                 role_index = i
                 server_role = ctx.guild.get_role(server_data["colored_roles"]["roles"][i]["id"])
@@ -1188,7 +1221,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         # If they want to create a role
         # ==================================================
-        if _one == "create":
+        if _action == "create":
             examples = [
                 "`>>colored_roles create Blue 2040FF`"
             ]
@@ -1205,7 +1238,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # ==================================================
             # Check if they provided name and color values
             # ==================================================
-            if _two == "":
+            if _role == "":
                 return await oap.give_error(
                     text=f"Please enter a role name and color.",
                     examples=examples,
@@ -1259,7 +1292,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # ==================================================
             try:
                 where = "create the role"
-                role = await ctx.guild.create_role(name=_two, colour=color, reason=f"Colored role created by {ctx.author.name}")
+                role = await ctx.guild.create_role(name=_role, colour=color, reason=f"Colored role created by {ctx.author.name}")
 
                 for user_role in ctx.author.roles:
                     if user_role.color.value != 0:
@@ -1299,7 +1332,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         # If they want to edit a role
         # ==================================================
-        if _one == "edit":
+        if _action == "edit":
             examples = [
                 "`>>colored_roles edit Blue name Red`",
                 "`>>colored_roles edit Red color FF8020`"
@@ -1317,7 +1350,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # ==================================================
             # Check if they gave role, setting, and value values
             # ==================================================
-            if _two == "":
+            if _role == "":
                 return await oap.give_error(
                     text=f"Please enter a role to edit.",
                     examples=examples,
@@ -1441,7 +1474,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
 
             return await oap.give_output(
                 embed_title=f"Alright!",
-                embed_description=f"Changed {_two}'s {_three} to {_four}",
+                embed_description=f"Changed {_role}'s {_three} to {_four}",
                 log_text=f"Created a new colored role",
                 cog=self.cog_name,
                 ctx=ctx,
@@ -1452,7 +1485,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         # ==================================================
         # If they want to remove a role
         # ==================================================
-        if _one == "delete":
+        if _action == "delete":
             examples = [
                 "`>>colored_roles delete Blue`"
             ]
@@ -1460,7 +1493,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # ==================================================
             # Check if they gave arguments
             # ==================================================
-            if _two == "":
+            if _role == "":
                 return await oap.give_error(
                     text=f"Please enter a role for me to delete!",
                     examples=examples,
@@ -1512,8 +1545,129 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
             # ==================================================
             return await oap.give_output(
                 embed_title=f"Alright!",
-                embed_description=f"Deleted the colored role \"{_two}\"!",
+                embed_description=f"Deleted the colored role \"{_role}\"!",
                 log_text=f"Deleted a colored role",
+                cog=self.cog_name,
+                ctx=ctx,
+                data=server_data
+            )
+
+
+    # ==================================================
+    # Leaderboards
+    # ==================================================
+    @commands.command(brief="", help="""\
+        Get and edit leaderboards!
+
+        __**Editing**__
+        Toggle leaderboards and change whether you want this server to show up on public leaderboards
+
+        __**Valid Leaderboards**__
+        - halls (if enabled)
+
+        `>>leaderboard halls`
+        `>>leaderboard toggle halls`
+        """)
+    async def leaderboard(self, ctx, _one="", _two=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+    
+        # ==================================================
+        # If they didnt give any args
+        # Give them the help message
+        # ==================================================
+        if _one == "":
+            return await oap.give_output(
+                embed_title=f"The Leaderboard Command!",
+                embed_description=self.abacus.get_command("leaderboard").help,
+                ctx=ctx
+            )
+
+        # ==================================================
+        # If they want hall leaderboards
+        # Give em hall leaderboards
+        # ==================================================
+        if _one == "halls":
+            # ==================================================
+            # Check if halls are enabled
+            # ==================================================
+            if server_data.get("halls") == None or server_data.get("halls") == {}:
+                return await oap.give_error(
+                    text=f"This server doesn't have halls enabled!",
+                    ctx=ctx
+                )
+
+            empty = True
+            for _name, _hall in server_data["halls"].items():
+                if _hall["messages"] != {}:
+                    empty = False
+                    break
+
+            if empty:
+                return await oap.give_error(
+                    text=f"This server's halls dont have any messages in them!",
+                    ctx=ctx
+                )
+
+            top_messages = {}
+
+            for _name, _hall in server_data["halls"].items():
+                top_messages[_name] = {}
+                for i in range(3):
+                    highest = None
+                    highest_channel = None
+                    highest_value = 0
+
+                    for _original_id, _message in _hall["messages"].items():
+                        if _message["score"] > highest_value and _original_id not in top_messages[_name].keys():
+                            highest = _original_id
+                            highest_channel = _message["original channel"]
+                            highest_value = _message["score"]
+
+                    if highest != None and highest_channel != None:
+                        top_messages[_name][highest] = {
+                            "channel": highest_channel,
+                            "score": highest_value
+                        }
+
+            top_output = {}
+
+            for _hall_name, _data in top_messages.items():
+                top_output[_hall_name] = []
+                for _original_id, _message in _data.items():
+                    try:
+                        channel = await self.abacus.fetch_channel(_message["channel"])
+                        message = await channel.fetch_message(_original_id)
+                    except:
+                        continue
+
+                    if len(message.content) == 0 or "http" in message.content:
+                        content = "Click to jump!"
+                    else:
+                        content = message.content
+
+                    top_output[_hall_name].append(f"(+{_message['score']}) {message.author.mention} in {channel.mention}: [{content}]({message.jump_url})")
+
+            print(top_output)
+            print(top_messages)
+
+            embed = oap.makeEmbed(
+                title=f"Alright!",
+                description=f"*Here are all halls top three messages!*",
+                ctx=ctx
+            )
+            
+            for _hall, _data in top_output.items():
+                embed.add_field(
+                    name=_hall,
+                    value=("\n".join(_data)) if len(_data) > 0 else "No messages to display!",
+                    inline=False
+                )
+            
+            return await oap.give_output(
+                embed=embed,
+                log_text=f"Got hall leaderboard",
                 cog=self.cog_name,
                 ctx=ctx,
                 data=server_data
@@ -1524,6 +1678,7 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
     # Remade Server Settings
     # ==================================================
     @commands.command(brief="Change server-wide settings", help="i dunno lol ill write this later", enabled=False)
+    @commands.has_permissions(manage_guild=True)
     async def server_settings(self, ctx):
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -1584,9 +1739,9 @@ class Settings(commands.Cog, description="Settings, per-server or per-user"):
         if response.startswith("toggle"):
             if response.split("toggle ")[1] not in ["invocation", "autoresponders", "colored roles"]:
                 embed = oap.makeEmbed(
-title="Whoops!",
-description="I couldn't find a toggle with that name.\nMake sure you spelt it correctly!",
-ctx=ctx)
+                    title="Whoops!",
+                    description="I couldn't find a toggle with that name.\nMake sure you spelt it correctly!",
+                    ctx=ctx)
                 return await ctx.send(embed=embed)
 
             if response.endswith("invocation"):
@@ -1613,9 +1768,9 @@ ctx=ctx)
 
             oap.setJson(f"servers/{ctx.guild.id}", server_data)
             embed = oap.makeEmbed(
-title="Success!",
-description=f"{out} been toggled {value} for {ctx.guild.name}",
-ctx=ctx)
+                title="Success!",
+                description=f"{out} been toggled {value} for {ctx.guild.name}",
+                ctx=ctx)
             await ctx.send(embed=embed)
             return oap.log(text=f"Toggled {response.split('toggle ')[1]} {value}", cog="Settings", color="yellow", ctx=ctx)
 
@@ -1633,6 +1788,710 @@ ctx=ctx)
                     # description="That wasn't a valid category!\nDid you spell it right?",
                     # ctx=ctx)
         #         return ctx.send(embed=embed)
+
+
+    # ==================================================
+    # Halls
+    # ==================================================
+    @commands.command(brief="Add, edit, and remove halls", help="""\
+        __**Required Permissions**__
+        - Listing halls: None
+        - Everything else: Manage Server
+
+        Add, remove, and edit halls for this server.
+
+        __**Listing Halls**__
+        - Simply enter no arguments to list all halls for this server.
+        `>>halls`
+
+        __**Adding a Hall**__
+        - Enter no arguments, and the bot will follow up with questions.
+        `>>halls add`
+
+        __**Editing a Hall**__
+        __Emoji__
+        - This determines the emoji users need to react with for a message to get into the hall.
+        `>>halls edit hall1 emoji :thumbsup:`
+
+        __Requirement__
+        - This determines the amount of users that must react with said emoji for the message to get into the hall.
+        `>>halls edit hall1 requirement 5`
+
+        __Channel__
+        - This determines the hall that messages will be sent in when they meet the requirements.
+        `>>halls edit hall1 channel #hall-1`
+
+        __Announcement__
+        - This is the message that gets sent announcing that a user was put in a hall.
+        `>>halls edit hall1 announcement message \"[author] was sent to hall 1!\"`
+        - You can toggle this on or off as well:
+        `>>halls edit hall1 announcement toggle`
+        - You can also set a specified channel for it to be announced in.
+        - If this doesn't have a value, it will be sent in the original message's channel.
+        `>>halls edit hall1 announcement channel #hall-announcement-channel`
+        `>>halls edit hall1 announcement channel` (resets the value)
+
+        __Removal__
+        - This is the message that gets sent announcing that a user was removed from a hall.
+        - This will get put in the same channel that announcement messages are set to be put in.
+        `>>halls edit hall1 removal message \"[author] was removed from hall 1!\"`
+        `>>halls edit hall1 removal toggle`
+
+        __Placement__
+        - This is the message that gets put in the hall.
+        `>>halls edit hall1 placement message \"[author]: [message] \\n\\n[attachments]\"`
+        - By default, the bot makes a proxy of the user.
+        - This can be toggled
+        `>>halls edit hall1 placement proxied`
+
+        __Rival__
+        - This is the channel that this channel will fight against.
+        - For example, if there are four reactions using this halls emoji, and three with the rival halls emoji, the score comes out to 1, in this halls favor.
+        `>>halls edit hall1 rival hall2`
+        """)
+    async def halls(self, ctx, action="", given_hall_name="", setting="", value="", value2=""):
+        server_data = oap.getJson(f"servers/{ctx.guild.id}")
+        if server_data.get("delete_invocation") == True:
+            await oap.tryDelete(ctx)
+
+        # ==================================================
+        # Check if the server already has hall data
+        # ==================================================
+        if not server_data.get("halls"):
+            server_data["halls"] = {}
+    
+        # ==================================================
+        # If they didn't supply any arguments
+        # ==================================================
+        if action == "":
+            # ==================================================
+            # If the server doesnt have hall data
+            # Let em know
+            # ==================================================
+            if server_data["halls"] == {}:
+                return await oap.give_output(
+                    embed_title=f"Whoops!",
+                    embed_description=f"This server doesn't have any halls!\nAdd some with `>>halls add`!\nAlternatively, get help with `>>help halls`!",
+                    log_text=f"Listed halls",
+                    cog=self.cog_name,
+                    ctx=ctx,
+                    data=server_data
+                )
+            
+            # ==================================================
+            # Make a base embed
+            # ==================================================
+            embed = oap.makeEmbed(
+                title=f"Alright!",
+                description=f"Here's a list of this servers halls:",
+                ctx=ctx
+            )
+            
+            # ==================================================
+            # Iterate through halls
+            # add them as fields to the embed
+            # ==================================================
+            for name, hall in server_data["halls"].items():
+                embed.add_field(
+                    name=name,
+                    value=f"""\
+                        **Emoji:** {hall["emoji"]}
+                        **Requirement:** {hall["requirement"]}
+                        **Channel:** {hall["channel"]}\
+                    """,
+                    inline=True
+                )
+            
+            # ==================================================
+            # Send the embed and log to console
+            # ==================================================
+            return await oap.give_output(
+                embed=embed,
+                log_text=f"Listed halls",
+                cog=self.cog_name,
+                ctx=ctx,
+                data=server_data
+            )
+
+        # ==================================================
+        # Defining a check for recieving messages
+        # ==================================================
+        def check(message):
+            return message.author.id == ctx.author.id
+
+        # ==================================================
+        # Checking if they have required permissions
+        # ==================================================
+        if not ctx.author.guild_permissions.manage_guild:
+            return await oap.give_error(
+                text=f"You don't have the correct permissions to do that!\nOnly users with the manage server permission can do that.",
+                ctx=ctx
+            )
+
+        # ==================================================
+        # If theyre adding a hall
+        # ==================================================
+        if action == "add":
+            # ==================================================
+            # Embed for the name of the hall
+            # ==================================================
+            embed = oap.makeEmbed(
+                title="Alright!",
+                description=f"What would you like the name of the hall to be?",
+                ctx=ctx
+            )
+
+            # ==================================================
+            # Ask for the name of the hall
+            # Wait for a message back
+            # ==================================================
+            await ctx.send(embed=embed)
+            hall_name_message = await self.abacus.wait_for("message", check=check)
+            hall_name = hall_name_message.content
+
+            # ==================================================
+            # While the name provided is in the existing halls
+            # ==================================================
+            while hall_name in server_data["halls"].keys():
+                # ==================================================
+                # Check if they want to cancel creation
+                # ==================================================
+                if hall_name == "cancel":
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Hall creation cancelled!",
+                        ctx=ctx
+                    )
+
+                # ==================================================
+                # Make an error embed
+                # ==================================================
+                embed = oap.makeEmbed(
+                    title="Whoops!",
+                    description=f"There's already a hall with that name!\n\nTry again, or cancel creation with \"cancel\"!",
+                    ctx=ctx
+                )
+
+                # ==================================================
+                # Alert them and wait for a response message
+                # ==================================================
+                await ctx.send(embed=embed)
+                hall_name_message = await self.abacus.wait_for("message", check=check)
+                hall_name = hall_name_message.content
+
+            # ==================================================
+            # Embed for the emoji of the hall
+            # ==================================================
+            embed = oap.makeEmbed(
+                title=f"the name of the hall is {hall_name}!",
+                description=f"""\
+                    *You can change the name later, too!*
+
+                    What would you like the halls emoji to be?
+                """,
+                ctx=ctx
+            )
+
+            # ==================================================
+            # Ask for the name of the hall
+            # Wait for a message back
+            # ==================================================
+            await ctx.send(embed=embed)
+            hall_emoji_message = await self.abacus.wait_for("message", check=check)
+            hall_emoji = hall_emoji_message.content.split(" ")[0]
+            invalid_emoji = True
+
+            # ==================================================
+            # While the emoji is invalid
+            # ==================================================
+            while invalid_emoji:
+                # ==================================================
+                # Check if they want to cancel creation
+                # ==================================================
+                if hall_emoji_message.content == "cancel":
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Hall creation cancelled!",
+                        ctx=ctx
+                    )
+
+                # ==================================================
+                # Try to add the emoji as a reaction
+                # (Test if the emoji is valid)
+                # ==================================================
+                try:
+                    await ctx.message.add_reaction(hall_emoji)
+                    await ctx.message.remove_reaction(hall_emoji, self.abacus.user)
+                    invalid_emoji = False
+
+                # ==================================================
+                # If not valid
+                # Ask for a new emoji
+                # ==================================================
+                except:
+                    embed = oap.makeEmbed(
+                        title=f"Whoops!",
+                        description=f"""\
+                            "{hall_emoji_message.content}" isn't a valid emoji.
+                            Make sure the emoji is from this server.
+
+                            Try again, or cancel creation with "cancel"!
+                        """,
+                        ctx=ctx
+                    )
+
+                    # ==================================================
+                    # Send output and wait for message back
+                    # ==================================================
+                    await ctx.send(embed=embed)
+                    hall_emoji_message = await self.abacus.wait_for("message", check=check)
+                    hall_emoji = hall_emoji_message.content.split(" ")[0]
+
+
+            # ==================================================
+            # Embed for the requirement of the hall
+            # ==================================================
+            embed = oap.makeEmbed(
+                title=f"the halls emoji is {hall_emoji}!",
+                description=f"""\
+                    *You can change the emoji later, too!*
+
+                    What would you like the halls reqirement to be?
+                    This is the amount of reactions required for a message to get put in the hall.
+                """,
+                ctx=ctx
+            )
+
+            # ==================================================
+            # Ask for requirement
+            # Wait for a message back
+            # ==================================================
+            await ctx.send(embed=embed)
+            hall_requirement_message = await self.abacus.wait_for("message", check=check)
+            hall_requirement = None
+
+            # ==================================================
+            # While the hall requirement isnt a number
+            # ==================================================
+            while not hall_requirement:
+                # ==================================================
+                # Check if they want to cancel creation
+                # ==================================================
+                if hall_requirement_message.content == "cancel":
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Hall creation cancelled!",
+                        ctx=ctx
+                    )
+
+                # ==================================================
+                # Try to make the hall requirement a number
+                # ==================================================
+                try:
+                    hall_requirement = int(hall_requirement_message.content)
+
+                # ==================================================
+                # If fails (they didnt give a valid number)
+                # Give them an error
+                # ==================================================
+                except:
+                    embed = oap.makeEmbed(
+                        title=f"Whoops!",
+                        description=f"""\
+                            {hall_requirement_message.content} isn't a valid requirement.
+                            Make sure to only enter a number.
+
+                            Try again, or cancel creation with "cancel"!
+                        """,
+                        ctx=ctx
+                    )
+
+                    # ==================================================
+                    # Send output & wait for response
+                    # ==================================================
+                    await ctx.send(embed=embed)
+                    hall_requirement_message = await self.abacus.wait_for("message", check=check)
+
+            # ==================================================
+            # Embed for the channel of the hall
+            # ==================================================
+            embed = oap.makeEmbed(
+                title=f"the halls requirement is {hall_requirement}!",
+                description=f"""\
+                    *You can change the requirement later, too!*
+
+                    What channel would you like the hall to be in?
+                    This is the channel that messages that meet the requirement will be sent in.
+                """,
+                ctx=ctx
+            )
+
+            # ==================================================
+            # Ask for the channel of the hall
+            # Wait for a resposne
+            # ==================================================
+            await ctx.send(embed=embed)
+            hall_channel_message = await self.abacus.wait_for("message", check=check)
+            
+            # ==================================================
+            # While they didnt mention a channel
+            # ==================================================
+            while len(hall_channel_message.channel_mentions) == 0:
+                # ==================================================
+                # Check if they want to cancel creation
+                # ==================================================
+                if hall_channel_message == "cancel":
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Hall creation cancelled!",
+                        ctx=ctx
+                    )
+
+                # ==================================================
+                # Make an error embed
+                # ==================================================
+                embed = oap.makeEmbed(
+                    title=f"Whoops!",
+                    description=f"""\
+                        {hall_channel_message.content} isn't a valid channel.
+                        Tag a channel in your message.
+
+                        Try again, or cancel creation with "cancel"!
+                    """,
+                    ctx=ctx
+                )
+
+                # ==================================================
+                # Send error and ask again
+                # ==================================================
+                await ctx.send(embed=embed)
+                hall_channel_message = await self.abacus.wait_for("message", check=check)
+
+            # ==================================================
+            # Set the hall channel
+            # ==================================================
+            hall_channel = hall_channel_message.channel_mentions[0].mention
+
+            # ==================================================
+            # Add the hall to the server data
+            # ==================================================
+            server_data["halls"][hall_name] = {
+                "emoji": hall_emoji,
+                "requirement": hall_requirement,
+                "channel": hall_channel,
+                "announcement message": "",
+                "announcement message enabled": True,
+                "announcement message channel": "",
+                "removal message": "",
+                "removal message enabled": True,
+                "placement message": "",
+                "placement message proxied": True,
+                "rival hall": None,
+                "messages": {}
+            }
+
+            # ==================================================
+            # Give output and log to console
+            # ==================================================
+            return await oap.give_output(
+                embed_title=f"Alright!",
+                embed_description=f"New hall, named {hall_name}, has been created!",
+                log_text=f"Created a hall ({hall_name})",
+                cog=self.cog_name,
+                ctx=ctx,
+                data=server_data
+            )
+
+
+        # ==================================================
+        # If theyre editing an embed
+        # ==================================================
+        if action == "edit":
+            # ==================================================
+            # Make a list of all hall names
+            # Set default examples
+            # ==================================================
+            halls = [hall for hall in server_data["halls"].keys()]
+            examples = [
+                "`>>halls edit oneword name stilloneword`",
+                "`>>halls edit \"two word\" requirement 6`"
+            ]
+
+            # ==================================================
+            # If the name they gave isnt in the list of halls
+            # Give an error
+            # ==================================================
+            if given_hall_name not in halls:
+                return await oap.give_error(
+                    text=f"I couldn't find that hall!\nMake sure to use the correct case - I'm case sensitive!",
+                    examples=examples,
+                    ctx=ctx
+                )
+
+            # ==================================================
+            # Set setting categories
+            # ==================================================
+            categories = ["name", "emoji", "requirement", "channel", "announcement", "placement", "rival", "removal"]
+
+            # ==================================================
+            # If the setting they gave isnt in the list of settings
+            # Give an error
+            # ==================================================
+            if setting.lower() not in categories:
+                return await oap.give_error(
+                    text=f"Please enter a valid setting to edit!",
+                    categories=categories,
+                    category_title="Settings",
+                    examples=examples,
+                    ctx=ctx
+                )
+
+            # ==================================================
+            # Dict of message/example for some settings
+            # ==================================================
+            messages = {
+                "name": [
+                    "Please provide a name to change to!",
+                    "`>>halls edit hall1 name hall2`"
+                ],
+                "emoji": [
+                    "Please provide an emoji to change to!",
+                    "`>>halls edit hall1 emoji :thumbsup:`"
+                ],
+                "requirement": [
+                    "Please provide a requirement to change to!",
+                    "`>>halls edit hall1 requirement 5`"
+                ],
+                "channel": [
+                    "Please tag a channel to change to!",
+                    "`>>halls edit hall1 channel #hall-1`"
+                ],
+                "rival": [
+                    "Please enter the name of a hall to set as the rival!",
+                    "`>>halls edit hall1 rival hall2`"
+                ]
+            }
+
+            # ==================================================
+            # If they gave a setting but not a value
+            # Give em an error
+            # ==================================================
+            if value == "" and setting in messages.keys():
+                return await oap.give_error(
+                    text=messages[setting][0],
+                    examples=messages[setting][1:],
+                    ctx=ctx
+                )
+
+            # ==================================================
+            # If they gave the placement setting
+            # Doesnt work
+            # ==================================================
+            if setting.lower() == "placement":
+                if value == "" or value not in ["message", "proxied"]:
+                    return await oap.give_error(
+                        text=f"Please enter a valid subcategory!",
+                        categories=[
+                            "message",
+                            "proxied"
+                        ],
+                        category_title="Subcategories",
+                        examples=[
+                            "`>>halls edit hall1 placement message \"[author]: [message] \\n\\n [attachments]\"`",
+                            "`>>halls edit hall1 placement proxied` (toggles on/off)"
+                        ],
+                        ctx=ctx
+                    )
+
+                if value == "message":
+                    if value2 == "":
+                        return await oap.give_error(
+                            text=f"Please provide a placement message!",
+                            examples=[
+                                "`>>halls edit hall1 placement message \"[author]: [message]\\n\\n[attachments]\"`"
+                            ],
+                            ctx=ctx
+                        )
+
+                    server_data["halls"][given_hall_name]["placement message"] = value2
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Successfully changed {given_hall_name}'s placement message to \"{value2}\"",
+                        log_text=f"Changed a halls placement message",
+                        cog=self.cog_name,
+                        ctx=ctx,
+                        data=server_data
+                    )
+
+                if value == "proxied":
+                    server_data["halls"][given_hall_name]["placement message proxied"] = not server_data["halls"][given_hall_name]["placement message proxied"]
+
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Successfully set proxied placement messages for {given_hall_name} to {server_data['halls'][given_hall_name]['placement message proxied']}",
+                        log_text=f"Toggled proxied placement messages",
+                        cog=self.cog_name,
+                        ctx=ctx,
+                        data=server_data
+                    )
+
+            if setting.lower() == "announcement":
+                if value == "" or value not in ["message", "toggle", "channel"]:
+                    return await oap.give_error(
+                        text=f"Please enter a valid subcategory!",
+                        categories=[
+                            "message",
+                            "toggle",
+                            "channel"
+                        ],
+                        category_title="Subcategories",
+                        examples=[
+                            "`>>halls edit hall1 announcement message \"[author] was put in hall 1!\"`",
+                            "`>>halls edit hall1 announcement toggle` (toggles on/off)",
+                            "`>>halls edit hall1 announcement channel #announcement-channel` (dont supply a channel if you want it to be sent in the original messages channel)"
+                        ],
+                        ctx=ctx
+                    )
+
+                if value == "toggle":
+                    server_data["halls"][given_hall_name]["announcement message enabled"] = not server_data["halls"][given_hall_name]["announcement message enabled"]
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Announcement messages for {given_hall_name} have been toggled {'off' if server_data['halls'][given_hall_name]['announcement message enabled'] == False else 'on'}!",
+                        log_text=f"Toggled a halls announcement messages",
+                        cog=self.cog_name,
+                        ctx=ctx,
+                        data=server_data
+                    )
+
+                if value == "message":
+                    the_setting = "announcement message"
+                elif value == "channel":
+                    the_setting = "announcement message channel"
+                server_data["halls"][given_hall_name][the_setting] = str(value2)
+                return await oap.give_output(
+                    embed_title=f"Alright!",
+                    embed_description=f"Successfully set {given_hall_name}'s {the_setting} to \"{value2}\"!",
+                    log_text=f"Changed a halls announcement setting",
+                    cog=self.cog_name,
+                    ctx=ctx,
+                    data=server_data
+                )
+            
+            if setting.lower() == "removal":
+                if value == "" or value not in ["message", "toggle"]:
+                    return await oap.give_error(
+                        text=f"Please give a valid subcategory!",
+                        categories=[
+                            "message",
+                            "toggle"
+                        ],
+                        category_title="Subcategories",
+                        examples=[
+                            "`>>halls edit hall1 removal message \"[author] was removed from hall 1\"`",
+                            "`>>halls edit hall1 removal toggle` (toggles on/off)"
+                        ],
+                        ctx=ctx
+                    )
+
+                if value == "toggle":
+                    server_data["halls"][given_hall_name]["removal message enabled"] = not server_data["halls"][given_hall_name]["removal message enabled"]
+                    return await oap.give_output(
+                        embed_title=f"Alright!",
+                        embed_description=f"Removal messages for {given_hall_name} have been toggled {'off' if server_data['halls'][given_hall_name]['removal message enabled'] == False else 'on'}!",
+                        log_text=f"Toggled a halls removal messages",
+                        cog=self.cog_name,
+                        ctx=ctx,
+                        data=server_data
+                    )
+
+                server_data["halls"][given_hall_name]["removal message"] = value2
+                return await oap.give_output(
+                    embed_title=f"Alright!",
+                    embed_description=f"Successfully set {given_hall_name}'s removal message to \"{value2}\"!",
+                    log_text=f"",
+                    cog=self.cog_name,
+                    ctx=ctx,
+                    data=server_data
+                )
+
+            # ==================================================
+            # If theyre changing name
+            # Swap dict keys
+            # ==================================================
+            if setting.lower() == "name":
+                server_data["halls"][value] = server_data["halls"].pop(given_hall_name)
+                for _name, _hall in server_data["halls"].items():
+                    if _hall["rival hall"] == given_hall_name:
+                        server_data["halls"][_name]["rival hall"] = value
+            
+            # ==================================================
+            # If theyre changing whatever else
+            # Just change it its pretty simple
+            # ==================================================
+            else:
+                if setting.lower() == "announcement":
+                    setting = "announcement message"
+                if setting.lower() == "rival":
+                    setting = "rival hall"
+                    if value == "":
+                        value = None
+
+                server_data["halls"][given_hall_name][setting.lower()] = value
+
+            # ==================================================
+            # Give output and log to console
+            # ==================================================
+            return await oap.give_output(
+                embed_title=f"Alright!",
+                embed_description=f"Succesfully changed {given_hall_name}'s {setting} to {value}",
+                log_text=f"Changed a hall ({given_hall_name}'s {setting} => {value})",
+                cog=self.cog_name,
+                ctx=ctx,
+                data=server_data
+            )
+
+
+        # ==================================================
+        # If theyre removing an embed
+        # ==================================================
+        if action == "remove":
+            # ==================================================
+            # Get all halls and examples
+            # ==================================================
+            halls = [hall for hall in server_data["halls"].keys()]
+            examples = [
+                "`>>halls remove oneword`",
+                "`>>halls remove \"two word\"`"
+            ]
+
+            # ==================================================
+            # If they gave an invalid hall name
+            # Give an error
+            # ==================================================
+            if given_hall_name not in halls:
+                return await oap.give_error(
+                    text=f"I couldn't find that hall!\nMake sure to use the correct case - I'm case sensitive!",
+                    examples=examples,
+                    ctx=ctx
+                )
+
+            # ==================================================
+            # Delete the hall from server data
+            # ==================================================
+            del server_data["halls"][given_hall_name]
+
+            # ==================================================
+            # Send output, log to console, save data
+            # ==================================================
+            return await oap.give_output(
+                embed_title=f"Alright!",
+                embed_description=f"{given_hall_name} succesfully removed!",
+                log_text=f"Removed a hall ({given_hall_name})",
+                cog=self.cog_name,
+                ctx=ctx,
+                data=server_data
+            )
 
 
 # ==================================================

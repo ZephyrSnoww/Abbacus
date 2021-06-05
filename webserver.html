@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>ABACUS</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- REACT -->
+        <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    </head>
+    <body>
+        <div id="alert-container">
+            <div id="alert-box">
+                <div id="alert-title" class="header">
+                    Alert!
+                </div>
+                <div id="alert-content" class="content">
+                    something something something!
+                </div>
+                <button id="alert-button" class="button">Alright</button>
+            </div>
+        </div>
+
+        <div id="site-container">
+            <div id="tool-bar-container">
+                <div id="tool-bar">
+                    <img src="https://media.discordapp.net/attachments/828790463401164800/840287694059864094/abacus.jpg" id="tool-bar-logo" class="tool-bar-item" />
+                    <div id="tabs-container" class="tool-bar-item">
+                        <div id="info-tab" class="tool-bar-button middle-underline">Info</div>
+                        <div id="user-settings-tab" class="tool-bar-button middle-underline">User Settings</div>
+                        <div id="server-settings-tab" class="tool-bar-button middle-underline">Server Settings</div>
+                    </div>
+                    <div id="time" class="tool-bar-item"></div>
+                </div>
+            </div>
+
+            <div id="background">
+                <!-- <img id="background-image" src="https://64.media.tumblr.com/7994c82290c801426a4344a39b1e3f73/e2c2ef816366433a-90/s540x810/119cd5c743b3f14f329d0accaf5407e6b2a9ca03.gifv" /> -->
+                <!-- <img id="background-image" src="https://64.media.tumblr.com/43c420485dde545e7221ac26a197feb0/e2c2ef816366433a-e3/s540x810/c757880852009a28df458e871d3a6ea10e73c8f1.gifv" /> -->
+                <!-- <img id="background-image" src="https://64.media.tumblr.com/5521c3a456cfe090e31d1e9b4e232519/ae050254aba666ea-c0/s400x600/baf1b63a5335e241098b98a5e9cf94cd9f184418.png" /> -->
+            </div>
+
+            <div id="site-content-container">
+                <div id="site-content">
+                    <div id="info-container" class="content-container">
+                        <div id="info-header" class="header">Welcome to the Abacus website!</div>
+                        <div class="paragraph">
+                            Abacus is a general purpose discord bot meant for anyone! This website is meant as a place to get information about abacus, and to function as a control panel for server and user settings. Explore around a little bit! Abacus is meant to be as broad as possible, with highly customizable settings and functionality for nearly everything. It's in progress all the time, and suggestions are welcome! Join the support server and add Abacus below!
+                        </div>
+                        <hr>
+                        <div class="sub-header">Features</div>
+                        <ul class="list1">
+                            <li>Automoderation</li>
+                            <li>Image manipulation</li>
+                            <ul class="list2">
+                                <li>Testing hexadecimal colors</li>
+                                <li>Testing discord profile pictures</li>
+                                <li>Captioning images</li>
+                                <li>Bitcrushing images</li>
+                            </ul>
+                            <li>General use</li>
+                            <ul class="list2">
+                                <li>Choosing between options</li>
+                                <li>Flipping coins</li>
+                                <li>Making polls</li>
+                                <li>Calculating math</li>
+                            </ul>
+                            <li>D&D</li>
+                            <ul class="list2">
+                                <li>Integration with <a href="https://foundryvtt.com/">Foundry</a></li>
+                                <li>Dice rolling</li>
+                                <li>Rolling stats</li>
+                                <li>Character management</li>
+                            </ul>
+                            <li>Autoresponders</li>
+                        </ul>
+                        <hr>
+                        <div class="sub-sub-header"><a href="https://discord.com/api/oauth2/authorize?client_id=681498257284661258&permissions=8&scope=bot">Add Abacus to your server!</a></div>
+                        <div class="sub-sub-header"><a href="https://discord.gg/PhGUpgnqv8">Join the support server!</a></div>
+                    </div>
+
+                    <div id="user-settings-container" class="content-container">
+                        <div id="user-settings-header" class="header">User Settings</div>
+                        <button id="login-button" class="login-button button">Log in</button>
+                        <div id="user-settings-form">
+                            <div id="user-color-container" class="content">
+                                User Color
+                                <br>
+                                <input type="color" id="user-color-input" />
+                                <label for="user-color-input" id="user-color-input-label"></label>
+                            </div>
+                            <button id="user-settings-submit-button" class="button">Submit</button>
+                        </div>
+                    </div>
+
+                    <div id="server-settings-container" class="content-container">
+                        <div id="server-settings-header" class="header">Server Settings</div>
+                        <div class="sub-header" id="server-settings-text">Log in on the user settings tab!</div>
+                        
+                        
+                        <div id="server-settings-form">
+                            <div id="server-select-collapsible-container" class="collapsible-container">
+                                <button id="server-select-collapsible-button" class="collapsible-button">Select a Server</button>
+                                <div id="server-select-collapsible-content" class="collapsible-content">
+                                    <ul id="server-select-list" class="collapsible-list"></ul>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div id="hall-settings-collapsible-container" class="collapsible-container">
+                                <button id="hall-settings-collapsible-button" class="collapsible-button">Halls</button>
+                                <div id="hall-settings-collapsible-content" class="collapsible-content">
+                                    <div id="hall-settings-content-container" class="collapsible-inner-content">
+                                        <!-- <button id="hall-settings-add-button" class="collapsible-add-button">Add Hall</button>
+                                        <button id="hall-settings-add-button" class="collapsible-add-button">Add Hall</button>
+                                        <button id="hall-settings-add-button" class="collapsible-add-button">Add Hall</button>
+                                        <button id="hall-settings-add-button" class="collapsible-add-button">Add Hall</button> -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="colored-role-settings-collapsible-container" class="collapsible-container">
+                                <button id="colored-role-settings-collapsible-button" class="collapsible-button">Colored Roles</button>
+                                <div id="colored-role-settings-collapsible-content" class="collapsible-content">
+                                    <div id="colored-role-settings-content-container" class="collapsible-inner-content">
+                                        Nothing yet!
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="poll-settings-collapsible-container" class="collapsible-container">
+                                <button id="poll-settings-collapsible-button" class="collapsible-button">Polls</button>
+                                <div id="poll-settings-collapsible-content" class="collapsible-content">
+                                    <div id="colored-role-settings-content-container" class="collapsible-inner-content">
+                                        Nothing yet!
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="autoresponder-settings-collapsible-container" class="collapsible-container">
+                                <button id="autoresponder-settings-collapsible-button" class="collapsible-button">Autoresponders</button>
+                                <div id="autoresponder-settings-collapsible-content" class="collapsible-content">
+                                    <div id="colored-role-settings-content-container" class="collapsible-inner-content">
+                                        Nothing yet!
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <button id="server-settings-submit-button">Submit Settings</button>
+                            
+                            <!-- <div id="poll-settings-collapsible-container" class="collapsible-container">
+                                <button id="poll-settings-collapsible-button" class="collapsible-button">Polls</button>
+                                <div id="poll-settings-collapsible-content" class="collapsible-content">
+                                    <div id="colored-role-settings-content-container" class="collapsible-inner-content">
+                                        Nothing yet!
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                        <!-- <button id="login-button" class="login-button button">Log in</button> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <script type="text/babel">
+            // ==================================================
+            // JAVASCRIPT START
+            // ==================================================
+
+            const id = (id) => document.getElementById(id);
+
+            const intToHex = function (rgb) { 
+                var hex = Number(rgb).toString(16);
+                while (hex.length % 2 == 1) {
+                    hex = "0" + hex;
+                }
+                return hex;
+            };
+            const hexToInt = (number) => parseInt(number, 16);
+
+            var user_id;
+            var server_id;
+
+            function tick() {
+                const element = (
+                    <p>{new Date().toLocaleTimeString()}</p>
+                );
+
+                ReactDOM.render(element, document.getElementById("time"));
+            }
+
+            tick();
+            setInterval(tick, 1000);
+
+
+            id("info-tab").onclick = () => {
+                id("info-container").style.display = "flex";
+                id("user-settings-container").style.display = "none";
+                id("server-settings-container").style.display = "none";
+            }
+            id("user-settings-tab").onclick = () => {
+                id("info-container").style.display = "none";
+                id("user-settings-container").style.display = "flex";
+                id("server-settings-container").style.display = "none";
+            }
+            id("server-settings-tab").onclick = () => {
+                id("info-container").style.display = "none";
+                id("user-settings-container").style.display = "none";
+                id("server-settings-container").style.display = "flex";
+            }
+
+            id("login-button").onclick = () => {
+                window.location.replace("https://discord.com/oauth2/authorize?response_type=token&client_id=681498257284661258&scope=identify&redirect_uri=http%3A%2F%2F4484c1d10149.ngrok.io%2Fuser-settings");
+            }
+
+            id("user-settings-submit-button").onclick = () => {
+                if (user_id) {
+                    var tokenRequest = new Request(`http://4484c1d10149.ngrok.io/set-user-settings?id=${user_id}&color=${"0x" + id("user-color-input").value.substring(1)}`);
+                    fetch(tokenRequest).then((response) => {
+                        id("alert-title").textContent = "Success!";
+                        id("alert-content").textContent = "Successfully applied settings!"
+                        id("alert-container").style.display = "flex";
+                    });
+                }
+            }
+
+            id("server-settings-submit-button").onclick = () => {
+                if (user_id) {
+                    var hallContainers = document.getElementsByClassName("hall-container");
+
+                    var halls = {};
+                    var to_update = [];
+
+                    for (var i = 0; i < hallContainers.length; i++) {
+                        var children = hallContainers[i].childNodes;
+                        halls[hallContainers[i].getAttribute("hall")] = {
+                            name: children[0].value,
+                            channel: children[1].childNodes[0].innerText.substring(1),
+                            requirement: children[2].value,
+                            announcement: children[4].value,
+                            "announcement enabled": children[5].checked,
+                            removal: children[6].value,
+                            "removal enabled": children[7].checked,
+                            placement: children[8].value,
+                            "placement proxied": children[9].checked
+                        }
+                        if (children[0].value != hallContainers[i].getAttribute("hall")) {
+                            to_update.push({
+                                "element": hallContainers[i],
+                                "new name": children[0].value
+                            });
+                        }
+                    }
+
+                    var setSettingsRequest = new Request(`http://4484c1d10149.ngrok.io/set-server-settings?user-id=${user_id}&server-id=${server_id}`, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            halls: halls,
+                            colored_roles: {},
+                            polls: {},
+                            autoresponders: {}
+                        })
+                    });
+
+                    fetch(setSettingsRequest).then((response) => {
+                        id("alert-title").textContent = "Success!";
+                        id("alert-content").textContent = "Successfully applied settings!"
+                        id("alert-container").style.display = "flex";
+                        for (var i = 0; i < to_update.length; i++) {
+                            to_update[i]["element"].setAttribute("hall", to_update[i]["new name"]);
+                        }
+                    });
+                }
+            }
+
+            var refreshDropDowns = () => {
+                var dropdowns = document.getElementsByClassName("dropdown-button");
+
+                for (var i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].addEventListener("click", (event) => {
+                        var targetElement = event.target || event.srcElement;
+                        var dropdown_content = targetElement.nextElementSibling;
+                        if (dropdown_content.style.display == "none") {
+                            dropdown_content.style.display = "block";
+                        } else {
+                            dropdown_content.style.display = "none";
+                        }
+
+                        var childNodes = dropdown_content.childNodes;
+                        for (var x = 0; x < childNodes.length; x++) {
+                            childNodes[x].addEventListener("click", (event) => {
+                                var targetElement = event.target || event.srcElement;
+                                var dropdown_content = targetElement.parentNode;
+                                var button = targetElement.parentNode.previousElementSibling;
+
+                                dropdown_content.style.display = "none";
+                                button.innerText = targetElement.innerText;
+                            });
+                        }
+                    });
+                }
+            }
+
+            id("alert-button").onclick = () => {
+                id("alert-container").style.display = "none";
+            }
+
+            var update_emoji_buttons = () => {
+                var emojiButtons = document.getElementsByClassName("hall-emoji");
+                for (var i = 0; i < emojiButtons.length; i++) {
+                    emojiButtons[i].addEventListener("click", (event) => {
+                        id("alert-title").textContent = "Notice!";
+                        id("alert-content").textContent = "Check your discord!"
+                        id("alert-button").style.display = "none";
+                        id("alert-container").style.display = "flex";
+
+                        var hall_name = event.target.parentNode.getAttribute("hall");
+                        
+                        var messageRequest = new Request(`http://4484c1d10149.ngrok.io/set-hall-emoji?user-id=${user_id}&server-id=${server_id}`, {
+                            method: "POST",
+                            body: JSON.stringify({
+                                "hall name": hall_name
+                            })
+                        });
+                        fetch(messageRequest).then((response) => {
+                            if (response.ok) {
+                                response.json().then((json) => {
+                                    if (json.type == "cancel") {
+                                        id("alert-title").textContent = "Alright!";
+                                        id("alert-content").textContent = "Cancelled the edit!"
+                                        id("alert-button").style.display = "block";
+                                        id("alert-container").style.display = "flex";
+                                    } else {
+                                        id("alert-title").textContent = "Success!";
+                                        id("alert-content").textContent = "Edited the halls emoji!"
+                                        id("alert-button").style.display = "block";
+                                        id("alert-container").style.display = "flex";
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+            }
+
+            var collapsibles = document.getElementsByClassName("collapsible-button");
+
+            for (var i = 0; i < collapsibles.length; i++) {
+                collapsibles[i].addEventListener("click", (event) => {
+                    var targetElement = event.target || event.srcElement;
+                    targetElement.classList.toggle("active-collapsible-button");
+                    var content = targetElement.nextElementSibling;
+                    if (content.style.display == "flex") {
+                        content.style.display = "none";
+                    } else {
+                        // content.style.maxHeight = content.scrollHeight+150 + "px";
+                        content.style.display = "flex";
+                    }
+                });
+            }
+
+            id("user-color-input").addEventListener("input", (event) => {
+                document.documentElement.style.setProperty('--user-color-input-value', id("user-color-input").value);
+            });
+
+            var serverList = id("server-select-list");
+
+            var serverSelect = () => {
+                for (let i = 0; i < serverList.children.length; i++) {
+                    serverList.children[i].addEventListener("click", () => {
+                        var guildRequest = new Request(`http://4484c1d10149.ngrok.io/fetch-server-data?server=${serverList.children[i].innerText}`);
+                        fetch(guildRequest).then((response) => {
+                            if (response.ok) {
+                                response.json().then((json) => {
+                                    console.log(json);
+                                    server_id = json["server id"];
+
+                                    const hall_settings_content = id("hall-settings-content-container");
+                                    const colored_roles_settings_content = id("colored-role-setting-content-container");
+                                    const poll_settings_content = id("poll-settings-content-container");
+
+                                    if (json.halls) {
+                                        if (json.halls != {}) {
+                                            var elements = [];
+                                            for (var hall_name in json.halls) {
+                                                var channel_id = parseInt(json.halls[hall_name].channel.substring(2, json.halls[hall_name].channel.length-1));
+                                                var channel_name;
+                                                var channels = [];
+
+                                                for (var i in json.channels) {
+                                                    channels.push(<div channelid={json.channels[i][0]} className="hall-channel-select-item dropdown-item">#{json.channels[i][1]}</div>);
+                                                    if (json.channels[i][0] == channel_id) {
+                                                        channel_name = json.channels[i][1];
+                                                    }
+                                                }
+
+                                                const element = (
+                                                    <div className="hall-container" hall={hall_name}>
+                                                        <input className="hall-name" defaultValue={hall_name} />
+                                                        <div className="hall-channel-select dropdown">
+                                                            <button className="hall-channel-select-button dropdown-button">#{channel_name}</button>
+                                                            <div className="hall-channel-select-content dropdown-content">
+                                                                {channels}
+                                                            </div>
+                                                        </div>
+                                                        <input className="hall-requirement" defaultValue={json.halls[hall_name].requirement} />
+                                                        <button className="hall-emoji">Set Emoji</button>
+                                                        <input className="hall-rival" defaultValue={json.halls[hall_name]["rival hall"]} />
+                                                        <input className="hall-announcement" defaultValue={json.halls[hall_name]["announcement message"]} />
+                                                        <input type="checkbox" className="hall-announcement-enabled" defaultChecked={json.halls[hall_name]["announcement message enabled"]} />
+                                                        <input className="hall-removal" defaultValue={json.halls[hall_name]["removal message"]} />
+                                                        <input type="checkbox" className="hall-removal-enabled" defaultChecked={json.halls[hall_name]["removal message enabled"]} />
+                                                        <input className="hall-placement" defaultValue={json.halls[hall_name]["placement message"]} />
+                                                        <input type="checkbox" className="hall-placement-proxied" defaultChecked={json.halls[hall_name]["placement message proxied"]} />
+                                                        <hr />
+                                                    </div>
+                                                )
+
+                                                elements.push(element);
+                                            }
+                                            elements.push(
+                                                <button id="hall-add-button" className="button">Add Hall</button>
+                                            )
+
+                                            ReactDOM.render(elements, hall_settings_content);
+                                            refreshDropDowns();
+                                            update_emoji_buttons();
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+            }
+
+            if (window.location.hash) {
+                var hash = window.location.hash;
+                var hashes = hash.split("&");
+                if (hashes[1].startsWith("access_token")) {
+                    var token = hashes[1].split("access_token=")[1];
+                    var tokenRequest = new Request(`http://4484c1d10149.ngrok.io/user-token=${token}`);
+                    fetch(tokenRequest).then((response) => {
+                        if (response.ok) {
+                            response.json().then((json) => {
+                                var serverRequest = new Request(`http://4484c1d10149.ngrok.io/fetch-servers?id=${json.id}`);
+                                fetch(serverRequest).then((response) => {
+                                    if (response.ok) {
+                                        response.json().then((json) => {
+                                            console.log(json.servers)
+                                            if (json.servers.length == 0) {
+                                                var element1 = document.createElement("li");
+                                                var element2 = document.createElement("li");
+                                                element1.appendChild(document.createTextNode("You aren't in any servers I'm in!"));
+                                                element2.appendChild(document.createTextNode("Add me to a server from the homepage!"));
+                                                serverList.appendChild(element1);
+                                                serverList.appendChild(element2);
+                                            } else {
+                                                for (let i = 0; i < json.servers.length; i++) {
+                                                    var element = document.createElement("li");
+                                                    element.appendChild(document.createTextNode(json.servers[i]));
+                                                    serverList.appendChild(element);
+                                                }
+                                                serverSelect();
+                                            }
+                                        })
+                                    }
+                                })
+                                id("login-button").style.display = "none";
+                                id("server-settings-text").style.display = "none";
+                                id("user-settings-form").style.display = "flex";
+                                id("server-settings-form").style.display = "flex";
+                                id("user-color-input").value = "#" + intToHex(json.color);
+                                document.documentElement.style.setProperty('--user-color-input-value', "#" + intToHex(json.color));
+                                user_id = json.id;
+                            });
+                        }
+                    });
+                }
+            } else {
+                id("user-settings-form").style.display = "none";
+            }
+
+            // ==================================================
+            // JAVASCRIPT END
+            // ==================================================
+        </script>
+
+
+
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                scrollbar-width: none;
+            }
+
+            :root {
+                --user-color-input-value: #000;
+                --text-color: #DDDDFF;
+            }
+
+            ::-webkit-scrollbar {
+                display: none;
+            }
+
+            a {
+                color: #9090AA;
+            }
+
+            hr {
+                width: 90%;
+                align-self: center;
+                background-color: transparent;
+                border: 1px solid #9090AA;
+                margin-top: 20px;
+            }
+
+            button {
+                border: 0;
+                outline: 0;
+                background-color: #171717;
+                padding: 10px;
+                border-radius: 5px;
+                color: var(--text-color);
+                font-weight: bold;
+                transition: 0.5s;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background-color: #202020;
+            }
+
+            #info-container {
+                display: flex;
+                /* height: 100%; */
+            }
+
+            #user-settings-container {
+                display: none;
+                /* height: 100%; */
+            }
+
+            #server-settings-container {
+                display: none;
+                /* height: 100%; */
+            }
+
+            #server-settings-submit-button {
+                margin-top: 20px;
+                width: 50%;
+            }
+
+            #alert-container {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 2;
+                background-color: #0005;
+                backdrop-filter: blur(5px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-color);
+            }
+
+            #alert-box {
+                background-color: #2e2e2e;
+                /* border-top: 10px solid #FFFA; */
+                padding: 30px;
+                border-radius: 10px;
+            }
+
+            #alert-button {
+                width: 100%;
+            }
+
+            #user-color-input {
+                /* border: 2px solid #7289DA; */
+                border-radius: 0px;
+                /* border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                border-top: 7px solid #FFF6; */
+                background: none;
+                padding: 0;
+                margin-top: 10px;
+                outline: none;
+                width: 50%;
+                min-height: 30px;
+                display: none;
+            }
+
+            #user-color-input-label {
+                background-color: var(--user-color-input-value);
+                padding-left: 25%;
+                padding-right: 25%;
+                min-width: 100px;
+                min-height: 30px;
+                border-radius: 5px;
+                /* border-top-left-radius: 5px;
+                border-top-right-radius: 5px; */
+                /* border-top: 7px solid #909090; */
+                margin-top: 20px;
+                /* flex: 1 0 50%; */
+            }
+
+            #user-settings-form {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: flex-start;
+                display: none;
+                /* height: 100%; */
+            }
+
+            #server-settings-form {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: flex-start;
+                display: none;
+            }
+
+            #user-color-container {
+                text-align: center;
+                flex: 1 0 50%;
+            }
+
+            #background {
+                position: fixed;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                z-index: -1;
+            }
+
+            #background-image {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                min-width: 50%;
+                min-height: 50%;
+                /* filter: blur(5px); */
+                transform: scale(1.1);
+            }
+
+            #site-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                flex-direction: column;
+                align-content: center;
+                background-color: #171717;
+            }
+
+            #tool-bar-container {
+                flex: 0 0 60px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #tool-bar {
+                flex: 1 0 100%;
+                /* width: 50%; */
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                /* border-bottom-left-radius: 10px;
+                border-bottom-right-radius: 10px; */
+                flex-wrap: nowrap;
+                /* background-color: #30303A; */
+                background-color: #222222;
+                /* filter: drop-shadow(0 0 10px #000); */
+                backdrop-filter: blur(15px);
+                /* width: 50%; */
+                z-index: 1;
+                /* width: 55%;
+                align-self: center; */
+            }
+
+            #site-content-container {
+                flex: 1 0;
+                /* background-color: #20202A; */
+                background-color: transparent;
+                /* background-image: url("https://64.media.tumblr.com/7994c82290c801426a4344a39b1e3f73/e2c2ef816366433a-90/s540x810/119cd5c743b3f14f329d0accaf5407e6b2a9ca03.gifv"); */
+                /* filter: blur(10px); */
+                color: var(--text-color);
+                word-wrap: break-word;
+                display: flex;
+                flex-direction: column;
+                overflow-y: scroll;
+                align-items: center;
+            }
+
+            #site-content {
+                padding: 30px;
+                width: 50%;
+                text-align: center;
+                height: 100%;
+                /* background-color: #404050; */
+                /* filter: drop-shadow(0 0 10px #000); */
+                background-color: #2E2E2E;
+                backdrop-filter: blur(5px);
+                overflow-y: scroll;
+                text-shadow: 1px 1px 5px #000;
+            }
+
+            #tool-bar-logo {
+                /* position: absolute; */
+                height: 50px;
+                width: 50px;
+                border-radius: 50%;
+                top: 5px;
+                left: 5px;
+                margin-right: auto;
+                /* margin-left: 20px; */
+            }
+
+            #time {
+                margin-left: auto;
+                color: #9090AA;
+                font-size: 15px;
+            }
+
+            #tabs-container {
+                display: flex;
+            }
+
+            .hall-announcement-enabled, .hall-removal-enabled, .hall-placement-proxied {
+                appearance: none;
+                border: 0;
+                outline: 0;
+                background-color: #EF2020;
+                color: var(--text-color);
+                margin: 10px;
+                padding: 10px;
+                font-size: 20px;
+                flex: 1 0 5%;
+                min-width: 30px;
+                min-height: 30px;
+                max-width: 30px;
+                max-height: 30px;
+                transition: 0.5s;
+            }
+
+            .hall-announcement-enabled:checked, .hall-removal-enabled:checked, .hall-placement-proxied:checked {
+                background-color: #20EF20;
+                transition: 0.5s;
+            }
+
+            .hall-announcement, .hall-removal, .hall-placement {
+                flex: 1 0 55%;
+                margin: 10px;
+                background: #0c0c0c;
+                padding: 5px;
+                font-size: 20px;
+                border: 0;
+                outline: 0;
+                color: var(--text-color);
+            }
+
+            .hall-container {
+                flex: 1 0 90%;
+                margin: 10px;
+                /* border-bottom: 5px solid #FFF5;
+                border-bottom-left-radius: 5px;
+                border-bottom-right-radius: 5px; */
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-around;
+                padding-bottom: 10px;
+                position: relative;
+            }
+
+            .hall-name {
+                font-size: 30px;
+                border: 0;
+                outline: 0;
+                /* border-bottom: 4px solid #FFF5;
+                border-bottom-left-radius: 5px;
+                border-bottom-right-radius: 5px; */
+                text-align: center;
+                background-color: #0008;
+                color: var(--text-color);
+                padding: 5px;
+                flex: 0 0 90%;
+            }
+
+            .hall-channel-select, .hall-emoji {
+                margin: 10px;
+                flex: 0.5 0 45%;
+                /* overflow-y: scroll; */
+                /* display: flex; */
+                /* flex-direction: column; */
+                /* max-width: 75%; */
+                position: relative;
+            }
+
+            .hall-requirement, .hall-rival {
+                flex: 0.5 0 45%;
+                text-align: center;
+                padding: 5px;
+                border: 0;
+                background-color: #0008;
+                color: var(--text-color);
+                font-size: 20px;
+                margin: 10px;
+                outline: 0;
+            }
+
+            .hall-channel-select-button {
+                width: 100%;
+                border-radius: 0;
+            }
+
+            /* .dropdown-button {
+                background-color: #0009;
+                border: 0;
+                color: var(--text-color);
+                /* border-top: 4px solid #FFF5;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                cursor: pointer;
+                font-size: 20px;
+                padding: 5px;
+            } */
+
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: #000A;
+                /* min-width: 160px; */
+                width: 100%;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 2;
+                /* padding: 10px; */
+                cursor: pointer;
+                max-height: 350%;
+                overflow-y: scroll;
+            }
+            
+            .collapsible-list {
+                width: 100%;
+                list-style: none;
+            }
+
+            .collapsible-list > li {
+                padding: 10px;
+                transition: 0.5s;
+                background-color: #202020;
+                width: 100%;
+            }
+
+            .collapsible-list > li:hover {
+                background-color: #181818;
+                cursor: pointer;
+            }
+
+            .collapsible-inner-content {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-evenly;
+                width: 100%;
+                height: 100%;
+                margin: 10px;
+                flex: 1 0 100px;
+            }
+
+            
+
+            .button {
+                border: 0;
+                outline: 0;
+                /* background-color: #7289DA; */
+                background-color: #171717;
+                backdrop-filter: blur(10px);
+                padding: 10px;
+                width: 50%;
+                border-radius: 5px;
+                /* border-top: 7px solid #AAA; */
+                margin-top: 20px;
+                flex: 0 0 50%;
+                color: var(--text-color);
+                font-weight: bold;
+                /* max-height: 50px; */
+                transition: 0.5s;
+                cursor: pointer;
+            }
+
+            .button:hover {
+                background-color: #202020;
+                /* border-top: 7px solid #AAA; */
+            }
+            
+            .list1 {
+                width: 50%;
+                text-align: left;
+                font-size: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .list1 li {
+                align-self: flex-start;
+            }
+
+            .list2 {
+                width: 75%;
+                text-align: left;
+                font-size: 17px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .list2 li {
+                align-self: flex-start;
+            }
+
+            .list3 {
+                width: 75%;
+                text-align: left;
+                font-size: 17px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .list3 li {
+                align-self: flex-start;
+            }
+
+            .paragraph {
+                font-size: 20px;
+                text-align: justify;
+                text-indent: 50px;
+                margin-top: 10px;
+                margin-left: 40px;
+                margin-right: 40px;
+            }
+
+            .content {
+                font-size: 20px;
+                text-align: justify;
+                margin-top: 10px;
+                margin-left: 40px;
+                margin-right: 40px;
+            }
+
+            .content-container {
+                display: flex;
+                flex-direction: column;
+                flex-wrap: nowrap;
+                align-items: center;
+            }
+
+            .header {
+                font-size: 40px;
+                text-decoration: underline;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .sub-header {
+                font-weight: bold;
+                font-size: 30px;
+                margin: 10px;
+            }
+
+            .sub-sub-header {
+                font-weight: bold;
+                font-size: 20px;
+                margin-top: 15px;
+            }
+
+            .middle-underline {
+                position: relative;
+            }
+
+            .middle-underline:before {
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                bottom: 0;
+                left: 0;
+                background-color: #FFF;
+                visibility: hidden;
+                transform: scaleX(0);
+                transition: all 0.3s ease-in-out;
+            }
+
+            .middle-underline:hover:before {
+                visibility: visible;
+                transform: scaleX(1);
+            }
+
+            .tool-bar-button {
+                color: var(--text-color);
+                margin: 20px;
+                min-width: 150px;
+                text-align: center;
+                font-size: 20px;
+                /* border-bottom: 2px solid #FFF; */
+                font-weight: bold;
+                user-select: none;
+                cursor: pointer;
+            }
+
+            .tool-bar-item {
+                margin: 20px;
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+        </style>
+    </body>
+</html>

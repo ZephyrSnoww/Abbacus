@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Abacus</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="webserver-stylesheet.css" rel="stylesheet">
+
+        <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    </head>
+    <body>
+
+        <!-- Alert Container -->
+        <div id="alert-container">
+            <div id="alert-box">
+                <div id="alert-title" class="header">Alert!</div>
+                <div id="alert-content" class="own-line">Something happened!</div>
+                <button id="alert-button" onclick="hideAlert()" class="button">Alright</button>
+            </div>
+        </div>
+
+
+        <!-- Site Container -->
+        <div id="site-container">
+            <!-- Tool Bar Container -->
+            <div id="tool-bar-content-container">
+                <div id="tool-bar-outer-container">
+                    <div id="tool-bar-inner-container">
+                        <img src="icon.jpg" id="tool-bar-logo" />
+                        <div id="tabs-container">
+                            <div id="home-tab-button" href="#site-content-inner-container" onclick="switchTo('home');" class="tool-bar-tab-button middle-underline">Home</div>
+                            <div id="user-settings-tab-button" href="#user-settings-inner-container" onclick="switchTo('user');" class="tool-bar-tab-button middle-underline">User Settings</div>
+                            <div id="server-settings-tab-button" href="#server-settings-inner-container" onclick="switchTo('server');" class="tool-bar-tab-button middle-underline">Server Settings</div>
+                        </div>
+                        <div id="time"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Container -->
+            <div id="site-content-outer-container">
+                <!-- <div id="sidebar-left" class="sidebar"></div> -->
+                <div id="sliding-container">
+                    <div id="sliding-content">
+                        <!-- Home Page -->
+                        <div id="site-content-inner-container" class="content-inner-container">
+                            <div class="header">Abacus</div>
+                            <div class="paragraph">Abacus is a general purpose discord bot meant for anyone! This website is meant as a place to get information about abacus, and to function as a control panel for server and user settings. Explore around a little bit! Abacus is meant to be as broad as possible, with highly customizable settings and functionality for nearly everything. It's in progress all the time, and suggestions are welcome! Join the support server and add Abacus below!</div>
+                            <div class="break">Features</div>
+                            <ul class="list1">
+                                <li>Automoderation</li>
+                                <li>Image manipulation</li>
+                                <ul class="list2">
+                                    <li>Testing hexadecimal colors</li>
+                                    <li>Testing discord profile pictures</li>
+                                    <li>Captioning images</li>
+                                    <li>Bitcrushing images</li>
+                                </ul>
+                                <li>General use</li>
+                                <ul class="list2">
+                                    <li>Choosing between options</li>
+                                    <li>Flipping coins</li>
+                                    <li>Making polls</li>
+                                    <li>Calculating math</li>
+                                </ul>
+                                <li>D&D</li>
+                                <ul class="list2">
+                                    <li>Integration with <a href="https://foundryvtt.com/">Foundry</a></li>
+                                    <li>Dice rolling</li>
+                                    <li>Rolling stats</li>
+                                    <li>Character management</li>
+                                </ul>
+                                <li>Autoresponders</li>
+                            </ul>
+                            <div class="break">Invite Me!</div>
+                            <div class="button own-line" onclick="serverInvite()">Add me to your server!</div>
+                            <div class="button own-line" onclick="supportInvite()">Join the support server!</div>
+                        </div>
+
+
+                        <!-- User Settings Page -->
+                        <div id="user-settings-inner-container" class="content-inner-container">
+                            <div class="break">User&#160;Settings</div>
+                            <div id="login-button" class="button own-line" onclick="login()">Log In</div>
+                            <div id="user-settings-container" class="innermost-container">
+                                <div id="user-color-select-container" class="setting-container paragraph">
+                                    Your Color:
+                                    <input type="color" id="user-color-input" class="color-input" />
+                                    <label for="user-color-input" class="color-input-label"></label>
+                                </div>
+                                <hr>
+                                <hr>
+                                <hr>
+                                <hr>
+                                <div id="user-settings-submit-button" class="button" onclick="submitUserSettings()">Submit Settings</div>
+                            </div>
+                        </div>
+
+
+                        <!-- Server Settings Page -->
+                        <div id="server-settings-inner-container" class="content-inner-container">
+                            <div class="break">Server&#160;Settings</div>
+                            <div class="sub-header" id="server-settings-warning">Log in before changing server settings!</div>
+                            <div id="server-settings-container" class="innermost-container">
+                                <div id="server-select-container" class="collapsible-container">
+                                    <div id="server-select-button" class="collapsible-button">Select a Server</div>
+                                    <div id="server-select-content" class="collapsible-content">
+                                        <div id="server-select-content-container" class="collapsible-inner-content">
+                                            <ul id="server-select-list">
+                                            <hr>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <hr>
+                                <hr class="real-hr">
+                                <hr>
+                                <hr>
+                                <hr>
+                                <div id="hall-settings-container" class="collapsible-container">
+                                    <div id="hall-settings-button" class="collapsible-button">Server Halls</div>
+                                    <div id="hall-settings-content" class="collapsible-content">
+                                        <div id="hall-settings-content-container" class="collapsible-inner-content">
+                                            <hr>
+                                            <hr>
+                                            <div id="hall-settings-add-hall-button" onclick="addHall()" class="small-button half-width own-line">Add Hall</div>
+                                            <hr>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <hr>
+                                <hr class="real-hr">
+                                <hr>
+                                <hr>
+                                <div id="submit-server-settings-button" onclick="submitServerSettings()" class="small-button half-width own-line">Submit Settings</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div id="sidebar-right" class="sidebar"></div> -->
+            </div>
+        </div>
+
+        
+        <script src="webserver-javascript.js" type="text/babel"></script>
+    </body>
+</html>

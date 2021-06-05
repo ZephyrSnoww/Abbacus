@@ -25,7 +25,7 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
         help
         """)
     async def create_embed(self, ctx):
-        global get_channel, get_title, get_description, get_time, get_author, get_color, color, image
+        global get_channel, get_title, get_description, get_time, get_author, get_color, get_image, channel, title, description, time, color, author, image
 
         server_data = oap.getJson(f"servers/{ctx.guild.id}")
         if server_data.get("delete_invocation") == True:
@@ -128,7 +128,7 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                     ctx=ctx
                 )
             else:
-                title = response.content
+                title = None if response.content.lower() == "none" else response.content
                 if final:
                     return await get_final()
                 return await get_description()
@@ -151,40 +151,40 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                     ctx=ctx
                 )
             else:
-                description = response.content
-                if final:
-                    return await get_final()
-                return await get_time()
-
-        
-        async def get_time(final=False, error=False):
-            global time
-
-            if not error:
-                await oap.give_output(
-                    embed_title=f"Alright!",
-                    embed_description=time_ask,
-                    ctx=ctx
-                )
-            response = await self.abacus.wait_for("message", check=check)
-
-            if response.content.lower() == "cancel":
-                return await oap.give_output(
-                    embed_title=f"Alright!",
-                    embed_description=f"Embed creation cancelled.",
-                    ctx=ctx
-                )
-            elif response.content.lower() not in ["yes", "no"]:
-                await oap.give_error(
-                    text=f"Please send either \"yes\" or \"no\"!\nYou can also send \"cancel\", and I'll stop giving you prompts.",
-                    ctx=ctx
-                )
-                return await get_time(error=True)
-            else:
-                time = True if response.content.lower() == "yes" else False
+                description = None if response.content.lower() == "none" else response.content
                 if final:
                     return await get_final()
                 return await get_color()
+
+        
+        # async def get_time(final=False, error=False):
+        #     global time
+
+        #     if not error:
+        #         await oap.give_output(
+        #             embed_title=f"Alright!",
+        #             embed_description=time_ask,
+        #             ctx=ctx
+        #         )
+        #     response = await self.abacus.wait_for("message", check=check)
+
+        #     if response.content.lower() == "cancel":
+        #         return await oap.give_output(
+        #             embed_title=f"Alright!",
+        #             embed_description=f"Embed creation cancelled.",
+        #             ctx=ctx
+        #         )
+        #     elif response.content.lower() not in ["yes", "no"]:
+        #         await oap.give_error(
+        #             text=f"Please send either \"yes\" or \"no\"!\nYou can also send \"cancel\", and I'll stop giving you prompts.",
+        #             ctx=ctx
+        #         )
+        #         return await get_time(error=True)
+        #     else:
+        #         time = True if response.content.lower() == "yes" else False
+        #         if final:
+        #             return await get_final()
+        #         return await get_color()
 
 
         async def get_color(final=False, error=False):
@@ -258,6 +258,8 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                 return await get_author(error=True)
             else:
                 author = response.mentions[0]
+                if final:
+                    return await get_final()
                 return await get_image()
 
 
@@ -304,9 +306,8 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                     embed=oap.makeEmbed(
                         title=title,
                         description=description,
-                        timestamp=None if not time else (datetime.now()+timedelta(hours=6)),
-                        author=author,
-                        color=color,
+                        author=None,
+                        color=None,
                         image=image
                     ),
                     ctx=ctx
@@ -339,9 +340,8 @@ class Moderation(commands.Cog, description="Automatic moderation and mod abiliti
                     embed=oap.makeEmbed(
                         title=title,
                         description=description,
-                        timestamp=None if not time else (datetime.now()+timedelta(hours=6)),
-                        author=author,
-                        color=color,
+                        author=None,
+                        color=None,
                         image=image
                     )
                 )

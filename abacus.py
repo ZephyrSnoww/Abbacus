@@ -1,5 +1,5 @@
-from discord.ext import commands
 import ovalia_auxiliary_protocol as oap
+from discord.ext import commands
 from sys import argv
 import traceback
 import discord
@@ -7,7 +7,8 @@ import difflib
 
 
 # ==================================================
-# TODO: Poll timers
+# TODO: Poll timers (NAH)
+# TODO: WEBSERVER <---------------------
 # ==================================================
 
 
@@ -15,20 +16,28 @@ import difflib
 # Initialization
 # Clear the console
 # Initialize the bot
-# Load all cogs
-# Define the is_owner() check
 # ==================================================
 oap.clear()
 abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960)
 data = oap.getJson("data")
 cogs = data["cogs"]
 
+# ==================================================
+# Remove the base help command
+# (We define a custom one in the general cog)
+# ==================================================
 abacus.remove_command("help")
 
+# ==================================================
+# Load all cogs
+# ==================================================
 for extension in cogs:
     abacus.load_extension(extension)
     oap.log(text=f"{extension.title()} loaded")
 
+# ==================================================
+# Check for if someone is the owner
+# ==================================================
 def is_owner(ctx):
     return ctx.author.id == abacus.owner_id
 
@@ -41,9 +50,9 @@ async def on_connect():
     oap.log(text="Connected")
 
 
-@abacus.event
-async def on_disconnect():
-    oap.log(text="Disconnected")
+# @abacus.event
+# async def on_disconnect():
+#     oap.log(text="Disconnected")
 
 
 # ==================================================

@@ -4,6 +4,7 @@ from termcolor import colored
 import discord
 import json
 import os
+import re
 
 
 def clear(): return os.system("cls")
@@ -78,7 +79,9 @@ colors = {
     "Images": "red",
     "Settings": "yellow",
     "Moderation": "red",
-    "Games": "cyan"
+    "Games": "cyan",
+    "Webserver": "yellow",
+    "Stupid": "green"
 }
 
 
@@ -110,33 +113,95 @@ def makeEmbed(
     description="DESCRIPTION",
     color=0xffadb6,
     ctx=None,
-    timestamp=datetime.now()+timedelta(hours=6),
     author=None,
     image=None,
     thumbnail=None):
 
+    # ==================================================
+    # If no color was supplied, use default color
+    # ==================================================
     if not color:
         color = 0xffadb6
 
+    # # ==================================================
+    # # Make a blank embed
+    # # ==================================================
+    # _out = discord.Embed()
+
+    # # ==================================================
+    # # If a description was supplied
+    # # Remove all tabs and extra spaces
+    # # Set the description
+    # # ==================================================
+    # if description != None:
+    description = re.sub(r"\t", " ", description)
+    while "  " in description:
+        description = description.replace("  ", " ")
+
+    # # ==================================================
+    # # If a title was supplied
+    # # Set it (with .title() for good formatting)
+    # # ==================================================
+    # if title != None:
+    title = title.capitalize()
+
+    # # ==================================================
+    # # If a context was given
+    # # Get the users color
+    # # Set the author of the embed to the author
+    # # Set the color to the users color (if it exists)
+    # # Set the timestamp (if given)
+    # # ==================================================
+    # if ctx != None:
+    #     user_color = getJson(f"users/{ctx.author.id}").get("color")
+    #     _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
+    #     _out.color = user_color if user_color else color
+    #     if timestamp != None:
+    #         _out.timestamp = timestamp
+    # # ==================================================
+    # # Otherwise (no context)
+    # # Set the color to default
+    # # Set the timstamp (if given)
+    # # ==================================================
+    # else:
+    #     _out.color = color
+    #     if timestamp != None:
+    #         _out.timestamp = timestamp
+
+    # # ==================================================
+    # # If an author was given, change embed author
+    # # ==================================================
+    # if author != None:
+    #     _out.set_author(name=author.nick if author.nick else author.name, icon_url=author.avatar_url)
+
+    # # ==================================================
+    # # If an image was given, set the embeds image
+    # # ==================================================
+    # if image != None:
+    #     _out.set_image(url=image)
+
+    # # ==================================================
+    # # If a thumbnail was given, set embed thumbnail
+    # # ==================================================
+    # if thumbnail != None:
+    #     _out.set_thumbnail(url=thumbnail)
+
     if ctx:
         user_color = getJson(f"users/{ctx.author.id}").get("color")
-        if timestamp:
-            _out = discord.Embed(title=title, description=description, color=user_color if user_color else color, timestamp=timestamp)
-        else:
-            _out = discord.Embed(title=title, description=description, color=user_color if user_color else color)
+        _out = discord.Embed(title=title, description=description, color=user_color if user_color else color)
     else:
-        if timestamp:
-            _out = discord.Embed(title=title, description=description, color=color, timestamp=timestamp)
-        else:
-            _out = discord.Embed(title=title, description=description, color=color)
+        _out = discord.Embed(title=title, description=description, color=color)
+
     if author:
         _out.set_author(name=author.nick if author.nick else author.name, icon_url=author.avatar_url)
     elif ctx:
         _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
+
     if image:
         _out.set_image(url=image)
     if thumbnail:
         _out.set_thumbnail(url=thumbnail)
+
     return _out
 
 
@@ -185,17 +250,14 @@ async def give_output(
     # ==================================================
     # Check if necesarry inputs were given
     # ==================================================
-    if not embed_title and not embed:
-        raise ValueError("An embed title must be given")
+    # if not embed_title and not embed:
+    #     raise ValueError("An embed title must be given")
 
-    if not embed_description and not embed:
-        raise ValueError("An embed description must be given")
+    # if not embed_description and not embed:
+    #     raise ValueError("An embed description must be given")
 
     if not ctx:
         raise ValueError("Context must be given")
-
-    if embed_title:
-        embed_title = embed_title.title()
 
     if cog == None:
         cog = "Main"

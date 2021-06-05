@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Abacus</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="webserver-stylesheet.css" rel="stylesheet">
+
+        <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    </head>
+    <body>
+
+        <!-- Alert Container -->
+        <div id="alert-container">
+            <div id="alert-box">
+                <div id="alert-title">Alert!</div>
+                <div id="alert-content">Something happened!</div>
+                <button id="alert-button" onclick="hideAlert()" class="button">Alright</button>
+            </div>
+        </div>
+
+
+        <!-- Site Container -->
+        <div id="site-container">
+            <!-- Tool Bar Container -->
+            <div id="tool-bar-content-container">
+                <div id="tool-bar-outer-container">
+                    <div id="tool-bar-inner-container">
+                        <img src="icon.jpg" id="tool-bar-logo" />
+                        <div id="tabs-container">
+                            <div id="home-tab-button" onclick="switchTo('home')" class="tool-bar-tab-button middle-underline">Home</div>
+                            <div id="user-settings-tab-button" onclick="switchTo('user-settings')" class="tool-bar-tab-button middle-underline">User Settings</div>
+                            <div id="server-settings-tab-button" onclick="switchTo('server-settings')" class="tool-bar-tab-button middle-underline">Server Settings</div>
+                        </div>
+                    </div>
+                    <div id="tool-bar-wave-container">
+                        <div id="tool-bar-wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Container -->
+            <div id="time-content-container">
+                <div id="time-outer-container">
+                    <div id="time-inner-container">
+                        <div id="time"></div>
+                    </div>
+                    <div id="time-wave-container">
+                        <div id="time-wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Container -->
+            <div id="site-wave-content-container">
+                <div id="site-content-left-wave-outer-container" class="site-content-wave-outer-container">
+                    <div id="site-content-left-wave-outer" class="site-content-wave-outer">
+                        <div id="site-content-left-wave-inner" class="site-content-wave-inner">
+                            <div id="site-content-left-wave" class="site-content-wave"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="site-content-outer-container">
+                    <div id="site-content-inner-container">
+                        <div class="header">Abacus</div>
+                    </div>
+                </div>
+                <div id="site-content-right-wave-outer-container" class="site-content-wave-outer-container">
+                    <div id="site-content-right-wave-outer" class="site-content-wave-outer">
+                        <div id="site-content-right-wave-inner" class="site-content-wave-inner">
+                            <div id="site-content-right-wave" class="site-content-wave"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <script src="webserver-javascript.js" type="text/babel"></script>
+    </body>
+</html>

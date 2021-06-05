@@ -1,11 +1,13 @@
 {
     "cogs": [
-        "general",
-        "images",
+        "webserver",
         "settings",
-        "dnd",
-        "events",
+        "general",
         "automod",
-        "games"
+        "stupid",
+        "events",
+        "images",
+        "games",
+        "dnd"
     ]
 }
