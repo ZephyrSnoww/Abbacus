@@ -1,4 +1,4 @@
-import cogs.ovalia_auxiliary_protocol as oap
+import ovalia_auxiliary_protocol as oap
 from discord.ext import commands
 from sys import argv
 import traceback
