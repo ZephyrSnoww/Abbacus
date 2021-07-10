@@ -1,6 +1,0 @@
-{
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": false,
-    "python.linting.pylamaEnabled": false,
-    "activestate.promptRuntimeCreation": false
-}
