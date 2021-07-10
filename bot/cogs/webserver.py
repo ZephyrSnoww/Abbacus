@@ -34,7 +34,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         # Returns html of page
         # ==================================================
         async def handler(request):
-            return web.FileResponse("./webserver-html")
+            return web.FileResponse("./webserver/webserver-html")
 
         # ==================================================
         # User settings tab request
@@ -323,7 +323,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         # Return javascript
         # ==================================================
         async def getIndex(request):
-            return web.FileResponse("./webserver.html")
+            return web.FileResponse("./webserver/webserver.html")
 
         async def getStyleSheet(request):
             return web.FileResponse("./webserver/style.css")
@@ -335,13 +335,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
             return web.FileResponse("./icon.jpg")
         
         async def getFavicon(request):
-            return web.FileResponse("./favicon.ico")
-        
-        async def getWave(request):
-            return web.FileResponse("./wave.png")
-        
-        async def getBackground(request):
-            return web.FileResponse("./background.png")
+            return web.FileResponse("./webserver/favicon.ico")
 
 
         # ==================================================
@@ -514,8 +508,6 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         app.router.add_route("GET", "/webserver-javascript.js", getJavascript)
         app.router.add_route("GET", "/icon.jpg", getIcon)
         app.router.add_route("GET", "/favicon.ico", getFavicon)
-        app.router.add_route("GET", "/wave.png", getWave)
-        app.router.add_route("GET", "/background.png", getBackground)
         app.router.add_route("POST", "/get-user-data", getUserData)
         app.router.add_route("POST", "/set-user-data", setUserData)
         app.router.add_route("POST", "/get-server-data", getServerData)
