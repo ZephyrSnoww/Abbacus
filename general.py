@@ -8,6 +8,7 @@ import requests as r
 import numpy as np
 import emoji as em
 import discord
+import asyncio
 import numexpr
 import nasapy
 import math
@@ -584,6 +585,82 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
 
 
     # ==================================================
+    # Queue
+    # ==================================================
+    @commands.command(brief="", usage="", help="")
+    async def queue(self, ctx, time="", *, message=""):
+        await oap.tryDelete(ctx)
+
+        if time == "":
+            return await oap.give_output(
+                embed_title = "Whoops!",
+                embed_description = "Please enter a time you wish to wait before sending the message!",
+                cog = self.cog_name,
+                log_text = "Tried to queue a message without a time",
+                ctx = ctx
+            )
+
+        if message == "" and len(ctx.message.attachments) == 0:
+            return await oap.give_output(
+                embed_title = "Whoops!",
+                embed_description = "Please enter a message, or attach an image youd like me to send!",
+                cog = self.cog_name,
+                log_text = "Tried to queue a message without a message",
+                ctx = ctx
+            )
+
+        time = re.split(r"(\D)", time)
+        time = time[:-1]
+        wait_time = 0
+
+        for i in range(int(len(time) / 2)):
+            x = i * 2
+            try:
+                wait_time += int(time[x]) * (1 if time[x+1] == "s" else (60 if time[x+1] == "m" else (60 * 60 if time[x+1] == "h" else (60 * 60 * 24 if time[x+1] == ["d"] else 1))))
+            except:
+                return await oap.give_output(
+                    embed_title = "Whoops!",
+                    embed_description = "Please enter a valid time!",
+                    cog = self.cog_name,
+                    log_text = "Tried to queue a message without a valid time",
+                    ctx = ctx
+                )
+
+        if wait_time == 0:
+            return await oap.give_output(
+                embed_title = "Whoops!",
+                embed_description = "Please enter a valid time!",
+                cog = self.cog_name,
+                log_text = "Tried to queue a message without a valid time",
+                ctx = ctx
+            )
+
+        await asyncio.sleep(wait_time)
+
+        channel_webhooks = await ctx.channel.webhooks()
+        has_webhook = False
+
+        for _webhook in channel_webhooks:
+            if _webhook.user.name == self.abacus.user.name:
+                has_webhook = True
+                webhook = _webhook
+
+        if not has_webhook:
+            webhook = await ctx.channel.create_webhook(name="Placement Webhook")
+
+        if message == "":
+            try:
+                await webhook.send("\n".join([attachment.url for attachment in ctx.message.attachments]), username=ctx.author.name, avatar_url=ctx.author.avatar_url, wait=True)
+            except:
+                await ctx.send("\n".join([attachment.url for attachment in ctx.message.attachments]))
+        else:
+            try:
+                await webhook.send(message + "\n\n" + "\n".join([attachment.url for attachment in ctx.message.attachments]), username=ctx.author.name, avatar_url=ctx.author.avatar_url, wait=True)
+            except:
+                await ctx.send(message + "\n\n" + "\n".join([attachment.url for attachment in ctx.message.attachments]))
+    
+    
+    # ==================================================
     # Invite
     # ==================================================
     @commands.command(brief="Get my invite link", usage="", help="Want to add me to your server? This makes it easy for you!\n\n__**Examples**__\n`>>invite`")
@@ -596,7 +673,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
         await ctx.send(embed=embed)
         oap.log(text="Got an invite link", cog="General", color="cyan", ctx=ctx)
 
-
+   
     # ==================================================
     # Help command
     # ==================================================

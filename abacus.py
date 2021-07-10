@@ -224,4 +224,5 @@ async def _reload_error(ctx, error):
 # ==================================================
 # Run the bot
 # ==================================================
-abacus.run(argv[1])
+tokens = oap.getJson("../../bot_tokens")
+abacus.run(tokens["Abacus"])

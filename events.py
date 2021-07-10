@@ -115,7 +115,10 @@ class Events(commands.Cog):
                             webhook = await placement_channel.create_webhook(name="Placement Webhook")
 
                         files = [await attch.to_file() for attch in message.attachments]
-                        placement_message_obj = await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar_url, files=files, wait=True)
+                        try:
+                            placement_message_obj = await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar_url, files=files, wait=True)
+                        except:
+                            placement_message_obj = await placement_channel.send(f"**{message.author.name}**\n\n{message.content}\n{oap.linebreak.join([attachment.url for attachment in message.attachments])}")
 
                 server_data["halls"][hall_name]["messages"][message.id] = {
                     "original channel": message.channel.id,
@@ -201,7 +204,10 @@ class Events(commands.Cog):
                                 webhook = await placement_channel.create_webhook(name="Placement Webhook")
 
                             files = [await attch.to_file() for attch in message.attachments]
-                            placement_message_obj = await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar_url, files=files, wait=True)
+                            try:
+                                placement_message_obj = await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar_url, files=files, wait=True)
+                            except:
+                                placement_message_obj = await placement_channel.send(f"**{message.author.name}**\n\n{message.content}\n{oap.linebreak.join([attachment.url for attachment in message.attachments])}")
 
                     server_data["halls"][rival_hall_name]["messages"][message.id] = {
                         "original channel": message.channel.id,

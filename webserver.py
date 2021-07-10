@@ -303,7 +303,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         app.router.add_route('GET', "/fetch-server-data", fetch_server_data)
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, 'localhost', 2418)
+        self.site = web.TCPSite(runner, 'localhost', 25565)
         await self.abacus.wait_until_ready()
         await self.site.start()
 
@@ -323,13 +323,13 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         # Return javascript
         # ==================================================
         async def getIndex(request):
-            return web.FileResponse("./webserver_remake_2.html")
+            return web.FileResponse("./webserver.html")
 
         async def getStyleSheet(request):
-            return web.FileResponse("./webserver_stylesheet_2.css")
+            return web.FileResponse("./webserver/style.css")
 
         async def getJavascript(request):
-            return web.FileResponse("./webserver_javascript_2.js")
+            return web.FileResponse("./webserver/script.js")
 
         async def getIcon(request):
             return web.FileResponse("./icon.jpg")
@@ -523,7 +523,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
 
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, "localhost", 2418)
+        self.site = web.TCPSite(runner, "localhost", 25565)
         await self.abacus.wait_until_ready()
         await self.site.start()
 
