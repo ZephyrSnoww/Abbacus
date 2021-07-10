@@ -1,0 +1,13 @@
+{
+    "cogs": [
+        "cogs.webserver",
+        "cogs.settings",
+        "cogs.general",
+        "cogs.automod",
+        "cogs.stupid",
+        "cogs.events",
+        "cogs.images",
+        "cogs.games",
+        "cogs.dnd"
+    ]
+}
