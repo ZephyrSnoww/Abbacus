@@ -9,7 +9,9 @@ import re
 
 def clear(): return os.system("cls")
 
+
 linebreak = "\n"
+
 skills = {
     "acr": "Acrobatics",
     "ani": "Animal Handling",
@@ -30,6 +32,7 @@ skills = {
     "ste": "Stealth",
     "sur": "Survival"
 }
+
 mods = {
     1: -5,
     2: -4,
@@ -62,6 +65,7 @@ mods = {
     29: 9,
     30: 10
 }
+
 abilities = {
     "str": "Strength",
     "dex": "Dexterity",
@@ -70,6 +74,7 @@ abilities = {
     "wis": "Wisdom",
     "cha": "Charisma"
 }
+
 colors = {
     None: "green",
     "Main": "green",
@@ -85,7 +90,7 @@ colors = {
 }
 
 
-# class 
+# class
 
 
 def getJson(_file):
@@ -109,13 +114,13 @@ async def tryDelete(_ctx):
 
 
 def makeEmbed(
-    title="TITLE",
-    description="DESCRIPTION",
-    color=0xffadb6,
-    ctx=None,
-    author=None,
-    image=None,
-    thumbnail=None):
+        title="TITLE",
+        description="DESCRIPTION",
+        color=0xffadb6,
+        ctx=None,
+        author=None,
+        image=None,
+        thumbnail=None):
 
     # ==================================================
     # If no color was supplied, use default color
@@ -188,14 +193,17 @@ def makeEmbed(
 
     if ctx:
         user_color = getJson(f"users/{ctx.author.id}").get("color")
-        _out = discord.Embed(title=title, description=description, color=user_color if user_color else color)
+        _out = discord.Embed(title=title, description=description,
+                             color=user_color if user_color else color)
     else:
         _out = discord.Embed(title=title, description=description, color=color)
 
     if author:
-        _out.set_author(name=author.nick if author.nick else author.name, icon_url=author.avatar_url)
+        _out.set_author(
+            name=author.nick if author.nick else author.name, icon_url=author.avatar_url)
     elif ctx:
-        _out.set_author(name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
+        _out.set_author(
+            name=ctx.author.nick if ctx.author.nick else ctx.author.name, icon_url=ctx.author.avatar_url)
 
     if image:
         _out.set_image(url=image)
@@ -206,18 +214,18 @@ def makeEmbed(
 
 
 async def give_error(
-    text=None,
-    categories=None,
-    category_title="Categories",
-    examples=None,
-    ctx=None):
+        text=None,
+        categories=None,
+        category_title="Categories",
+        examples=None,
+        ctx=None):
 
     if not text:
         raise ValueError("Text for the embed description must be given")
 
     if not ctx:
         raise ValueError("Context must be given")
-    
+
     embed = makeEmbed(
         title="Whoops!",
         description=f"{text}",
@@ -237,15 +245,16 @@ async def give_error(
 
     return await ctx.send(embed=embed)
 
+
 async def give_output(
-    embed_title=None,
-    embed_description=None,
-    embed=None,
-    log_text=None,
-    cog=None,
-    ctx=None,
-    data=None,
-    data_type="server"):
+        embed_title=None,
+        embed_description=None,
+        embed=None,
+        log_text=None,
+        cog=None,
+        ctx=None,
+        data=None,
+        data_type="server"):
 
     # ==================================================
     # Check if necesarry inputs were given
@@ -315,14 +324,14 @@ def getTime():
 
 
 def log(
-    text="PLACEHOLDER",
-    cog="Main",
-    color=None,
-    ctx=None,
-    event=False,
-    payload=False,
-    guild=None,
-    author=None):
+        text="PLACEHOLDER",
+        cog="Main",
+        color=None,
+        ctx=None,
+        event=False,
+        payload=False,
+        guild=None,
+        author=None):
 
     if color == None:
         color = colors[cog]
