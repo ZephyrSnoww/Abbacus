@@ -1,3 +1,4 @@
+/* BASICS */
 * {
     margin: 0;
     padding: 0;
@@ -28,6 +29,15 @@
     --text-color-darkest: #666;
 }
 
+
+
+
+
+
+
+
+
+/* GENERIC IDS */
 #entire-site {
     position: absolute;
     top: 0;
@@ -39,6 +49,16 @@
     color: var(--text-color);
 }
 
+
+
+
+
+
+
+
+
+
+/* NAVBAR */
 #navbar-container {
     padding: 10px 200px;
     background-color: var(--color-darker);
@@ -85,18 +105,12 @@
     color: var(--text-color-darker);
 }
 
-.button-simple {
-    background-color: var(--color-highlight);
-    color: var(--text-color);
-    padding: 10px 20px;
-    border-radius: 5px;
-    transition: 0.25s;
-}
 
-.button-simple:hover {
-    background-color: var(--color-highlight-darker);
-}
 
+
+
+
+/* DROPDOWNS */
 .dropdown-container {
     position: absolute;
     top: 150%;
@@ -130,6 +144,36 @@
     background-color: var(--color-dark);
 }
 
+
+
+
+
+
+
+
+
+/* GENERIC CLASSES */
+.button-simple {
+    background-color: var(--color-highlight);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: 0.25s;
+}
+
+.button-simple:hover {
+    background-color: var(--color-highlight-darker);
+}
+
+
+
+
+
+
+
+
+
+/* ANIMATIONS */
 @keyframes fade-in {
     0% {
         opacity: 0;
