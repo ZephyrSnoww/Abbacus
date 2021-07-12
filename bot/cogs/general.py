@@ -661,7 +661,7 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
             x = i * 2
             try:
                 wait_time += int(time[x]) * (1 if time[x+1] == "s" else (60 if time[x+1] == "m" else (
-                    60 * 60 if time[x+1] == "h" else (60 * 60 * 24 if time[x+1] == ["d"] else 1))))
+                    60 * 60 if time[x+1] == "h" else (60 * 60 * 24 if time[x+1] == "d" else 1))))
             except:
                 return await oap.give_output(
                     embed_title="Whoops!",
