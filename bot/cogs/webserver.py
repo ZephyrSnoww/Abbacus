@@ -332,7 +332,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
             return web.FileResponse("./webserver/script.js")
 
         async def getIcon(request):
-            return web.FileResponse("./icon.jpg")
+            return web.FileResponse("./webserver/icon.jpg")
         
         async def getFavicon(request):
             return web.FileResponse("./webserver/favicon.ico")
@@ -506,7 +506,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         app.router.add_route("GET", "/", getIndex)
         app.router.add_route("GET", "/webserver-stylesheet.css", getStyleSheet)
         app.router.add_route("GET", "/webserver-javascript.js", getJavascript)
-        app.router.add_route("GET", "/icon.jpg", getIcon)
+        app.router.add_route("GET", "/icon.png", getIcon)
         app.router.add_route("GET", "/favicon.ico", getFavicon)
         app.router.add_route("POST", "/get-user-data", getUserData)
         app.router.add_route("POST", "/set-user-data", setUserData)
@@ -515,7 +515,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
 
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, "localhost", 25565)
+        self.site = web.TCPSite(runner, "10.0.0.253", 25565)
         await self.abacus.wait_until_ready()
         await self.site.start()
 
