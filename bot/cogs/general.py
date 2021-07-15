@@ -682,7 +682,10 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
 
         await asyncio.sleep(wait_time)
 
-        channel_webhooks = await ctx.channel.webhooks()
+        try:
+            channel_webhooks = await ctx.channel.webhooks()
+        except:
+            channel_webhooks = []
         has_webhook = False
 
         for _webhook in channel_webhooks:
@@ -691,7 +694,10 @@ class General(commands.Cog, description="General commands, like roll, choose, fl
                 webhook = _webhook
 
         if not has_webhook:
-            webhook = await ctx.channel.create_webhook(name="Placement Webhook")
+            try:
+                webhook = await ctx.channel.create_webhook(name="Placement Webhook")
+            except:
+                pass
 
         if message == "":
             try:
