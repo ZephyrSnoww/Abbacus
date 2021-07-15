@@ -1,7 +1,35 @@
+let id = (id) => document.getElementById(id);
+
 // Toggling active class on items
 let reveal = (item) => {
     $("#" + item + "-container").toggleClass("active");
 }
+
+// Converting an integer to a hex
+const intToHex = function (rgb) { 
+    var hex = Number(rgb).toString(16);
+    while (hex.length % 2 == 1) {
+        hex = "0" + hex;
+    }
+    return hex;
+};
+
+// Converting a hex to an integer
+const hexToInt = (number) => {
+    if (number.startsWith("#")) {
+        number = number.substring(1);
+    }
+    return parseInt(number, 16);
+}
+
+
+
+
+
+
+
+
+
 
 // Opening the bot page
 let add = () => {
@@ -18,8 +46,49 @@ let login = () => {
     window.open("https://discord.com/oauth2/authorize?response_type=token&client_id=681498257284661258&scope=identify", '_blank').focus();
 }
 
+
+
+
+
+
+
+
 // Base website URL
 let base_url = "http://73.127.246.154:25565";
+
+
+
+
+
+
+
+
+
+// Updating user color inputs
+setInterval(() => {
+    id("user-settings-color-colored-input").value = document.documentElement.style.getPropertyValue("--user-color");
+    id("user-settings-color-input").value = document.documentElement.style.getPropertyValue("--user-color");
+}, 500);
+
+id("user-settings-color-colored-input").addEventListener("input", (event) => {
+    document.documentElement.style.setProperty('--user-color', id("user-settings-color-colored-input").value);
+    id("user-settings-color-input").value = id("user-settings-color-colored-input").value;
+});
+
+id("user-settings-color-input").addEventListener("input", (event) => {
+    document.documentElement.style.setProperty('--user-color', id("user-settings-color-input").value);
+    id("user-settings-color-colored-input").value = id("user-settings-color-input").value;
+})
+
+
+
+
+
+
+
+
+
+
 
 
 // If they've logged in (theres info in the url hash)
@@ -44,8 +113,9 @@ if (window.location.hash) {
         fetch(tokenRequest).then((response) => {
             // Get the response's JSON
             response.json().then((json) => {
-                
-            })
-        })
+                document.documentElement.style.setProperty('--user-color', "#" + intToHex(json.color));
+                $("#user-settings-form").toggleClass("disabled");
+            });
+        });
     }
 }

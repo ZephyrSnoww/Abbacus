@@ -11,14 +11,18 @@
 	<body>
 		<!-- SITE -->
 		<div id="entire-site">
+			<!-- NAVBAR -->
 			<div id="navbar-container">
+				<!-- LOGO -->
 				<div id="navbar-logo">
 					<div id="navbar-logo-image"></div>
 					<div id="navbar-logo-text">ABACUS</div>
 				</div>
 
+				<!-- CONTENT -->
 				<div id="navbar-content">
 					<div class="navbar-content-item" onclick="switch_to('about')">About</div>
+					<!-- SETTINGS DROPDOWN -->
 					<div id="navbar-dropdown" class="navbar-content-item dropdown" onclick="reveal('navbar-dropdown')">
 						Settings
 						<div id="navbar-dropdown-container" class="dropdown-container">
@@ -27,9 +31,47 @@
 							<div class="dropdown-item" onclick="switch_to('halls')">Halls</div>
 						</div>
 					</div>
+					<!-- BUTTONS -->
 					<button id="invite-button" class="button-simple navbar-content-item" onclick="add()">Add Me</button>
 					<button id="support-button" class="button-simple navbar-content-item" onclick="support()">Support Server</button>
 					<button id="login-button" class="button-simple navbar-content-item" onclick="login()">Log In</button>
+				</div>
+			</div>
+
+			<!-- CONTENT CONTAINER -->
+			<div id="site-content-container">
+				<!-- ABOUT -->
+				<div id="about-container" class="content-container">
+					<div id="about-text">
+						<div id="about-text-header" class="header">ABOUT</div>
+						<div id="about-text-content" class="text">
+							Abacus is a general purpose discord bot whose goal is to cover as many bases as possible. Whether you want moderation tools, autoresponders, custom embeds, or to have fun with images, Abacus has you covered.
+							<br><br>
+							Abacus is constantly being worked on, and suggestions are welcome! Join the support server and let us know what you think!
+						</div>
+					</div>
+				</div>
+
+				<!-- USER SETTINGS -->
+				<div id="user-settings-container" class="content-container">
+					<div id="user-settings-content">
+						<div id="user-settings-header" class="header">USER SETTINGS</div>
+						<form id="user-settings-form" class="settings-form disabled" onsubmit="submit_user_settings()">
+							<div id="user-settings-color-container" class="setting-container">
+								<div id="user-settings-color-label" class="setting-label">Color</div>
+								<input id="user-settings-color-input" class="setting-input"></input>
+								<input id="user-settings-color-colored-input" class="color-input" type="color" />
+								<label for="user-settings-color-colored-input" class="color-input-label"></label>
+							</div>
+							<div class="flexbox-linebreak"></div>
+							<button id="user-settings-submit-button" class="button-simple">Submit User Settings</button>
+						</form>
+					</div>
+				</div>
+
+				<!-- HALL SETTINGS -->
+				<div id="halls-settings-container" class="content-container">
+					<div id="halls-settings-content"></div>
 				</div>
 			</div>
 		</div>
