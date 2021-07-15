@@ -221,6 +221,7 @@ async def give_error(
 async def give_output(
         embed_title=None,
         embed_description=None,
+        embed_image=None,
         embed=None,
         log_text=None,
         cog=None,
@@ -274,6 +275,7 @@ async def give_output(
     embed = makeEmbed(
         title=embed_title,
         description=embed_description,
+        image=embed_image,
         ctx=ctx
     )
     await ctx.send(embed=embed)
