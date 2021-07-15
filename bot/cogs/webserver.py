@@ -370,7 +370,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
                 except discord.errors.Forbidden:
                     continue
                 if server != None:
-                    member = await server.fetch_member(int(user_id))
+                    member = server.get_member(int(user_id))
                     if member:
                         if member.guild_permissions.manage_guild:
                             valid_servers.append([server.name, server_id])
@@ -515,7 +515,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
 
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, "10.0.0.253", 25565)
+        self.site = web.TCPSite(runner, "10.0.0.253", 7777)
         await self.abacus.wait_until_ready()
         await self.site.start()
 
