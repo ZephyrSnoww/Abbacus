@@ -303,7 +303,7 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
         app.router.add_route('GET', "/fetch-server-data", fetch_server_data)
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, 'localhost', 25565)
+        self.site = web.TCPSite(runner, 'localhost', 7777)
         await self.abacus.wait_until_ready()
         await self.site.start()
 
@@ -515,7 +515,8 @@ class Webserver(commands.Cog, description="Interfacing with an online control pa
 
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, "10.0.0.253", 7777)
+        self.site = web.TCPSite(runner, "10.0.0.253", 7777) # DESKTOP
+        # self.site = web.TCPSite(runner, "localhost", 7777) # LAPTOP
         await self.abacus.wait_until_ready()
         await self.site.start()
 

@@ -4,6 +4,7 @@ from importlib import reload
 import requests
 import discord
 import urllib
+import shutil
 
 
 class Games(commands.Cog, description="A lotta commands for a lotta games"):
@@ -322,14 +323,27 @@ class Games(commands.Cog, description="A lotta commands for a lotta games"):
                 ctx = ctx
             )
 
-        response = requests.get(f"http://api.wolframalpha.com/v1/simple?appid=A4HU5T-9PRV4Q9L4T&i={urllib.parse.quote(input)}")
+        response = requests.get(f"http://api.wolframalpha.com/v1/simple?appid=A4HU5T-9PRV4Q9L4T&i={urllib.parse.quote(input)}&timeout=30", stream=True)
 
-        embed = oap.makeEmbed(
-            title = f"{input}",
-            description = f"{response}",
-            image = f"{response.url}",
-            ctx = ctx
-        )
+        if response.status_code == 200:
+            with open("./images/wolfram.png", "wb") as file:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, file)
+            
+            file = discord.File("./images/wolfram.png")
+            return await ctx.send(file=file)
+        elif response.status_code == 501:
+            embed = oap.makeEmbed(
+                title = f"Whoops!",
+                description = "Wolfram couldn't interpret that question!\nTry again with something else!",
+                ctx = ctx
+            )
+        elif response.status_code == 400:
+            embed = oap.makeEmbed(
+                title = f"Whoops!",
+                description = "You managed to not give any input!",
+                ctx = ctx
+            )
 
         return await oap.give_output(
             embed = embed,

@@ -18,7 +18,7 @@ import difflib
 # Initialize the bot
 # ==================================================
 oap.clear()
-abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960)
+abacus = commands.Bot(command_prefix=">>", owner_id=184474965859368960, case_insensetive=True)
 data = oap.getJson("data")
 cogs = data["cogs"]
 
